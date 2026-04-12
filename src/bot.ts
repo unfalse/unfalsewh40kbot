@@ -1,9 +1,12 @@
 import "dotenv/config";
+import { createServer } from "node:http";
 import { Bot, GrammyError, HttpError } from "grammy";
 import { HandlerRegistry } from "./handlers/index";
 import { GeminiLlmService } from "./services/llm.service";
 import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
+
+const HTTP_PORT = Number(process.env["HTTP_PORT"] ?? 3000);
 
 export class VoxLogisBot {
   private static requireEnv(name: string): string {
@@ -13,6 +16,16 @@ export class VoxLogisBot {
       process.exit(1);
     }
     return v;
+  }
+
+  private startHealthServer(): void {
+    const server = createServer((_req, res) => {
+      res.writeHead(200, { "Content-Type": "text/plain" });
+      res.end("OK");
+    });
+    server.listen(HTTP_PORT, () => {
+      console.error(`Health server listening on port ${HTTP_PORT}`);
+    });
   }
 
   async start(): Promise<void> {
@@ -51,6 +64,7 @@ export class VoxLogisBot {
       }
     });
 
+    this.startHealthServer();
     console.error("Vox-Logis Lexmechanic — долгий опрос начат. Омниссия наблюдает.");
     await bot.start();
   }
