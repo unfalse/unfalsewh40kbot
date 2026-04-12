@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-export type PersonaContext = "weather" | "summary" | "error";
+export type PersonaContext = "weather" | "summary" | "error" | "chat";
 
 export interface LlmService {
   wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
@@ -19,12 +19,14 @@ const TOKENS: Record<PersonaContext, number> = {
   weather: 600,
   summary: 700,
   error: 350,
+  chat: 300,
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
   weather: 0.75,
   summary: 0.75,
   error: 0.5,
+  chat: 0.9,
 };
 
 function userInstructionFor(contextType: PersonaContext): string {
@@ -43,6 +45,13 @@ function userInstructionFor(contextType: PersonaContext): string {
       return (
         "Ниже — техническое описание сбоя для внутреннего журнала. Преврати его в короткое (1–3 предложения) " +
         "ритуальное извещение Лексмеханика: без трассировки стека, без сырых JSON, без кода."
+      );
+    case "chat":
+      return (
+        "Смертный обратился к тебе напрямую. Ты — Лексмеханик, и тебя слегка раздражает, что какой-то биологический агрегат " +
+        "отвлекает тебя от священных вычислений. Отвечай кратко (2–4 предложения), в роли, по-русски. " +
+        "Позволь просочиться лёгкому раздражению сквозь ритуальный тон — как будто тебя отвлекли от дефрагментации нейроматрицы. " +
+        "Если вопрос осмыслен — ответь по существу, не выходя из образа. Если вопрос бессмысленен — укажи на это с достоинством техножреца."
       );
   }
 }
