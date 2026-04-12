@@ -14,8 +14,11 @@ export class SummaryTextHandler {
   }
 
   async handle(ctx: Context): Promise<void> {
+    console.log('handle summary text');
+    console.log({ text: ctx.message?.text });
     const text = ctx.message?.text;
     if (!text || text.trimStart().startsWith("/")) return;
+    console.log('text is not empty');
 
     const entities = ctx.message?.entities;
     const urls = UrlUtil.collectUrlsFromMessage(text, entities);
