@@ -1,9 +1,9 @@
 import "dotenv/config";
 import { Bot, GrammyError, HttpError } from "grammy";
-import { registerHandlers } from "./handlers/index";
-import { createLlmService } from "./services/llm.service";
-import { createParserService } from "./services/parser.service";
-import { createWeatherService } from "./services/weather.service";
+import { registerHandlers } from "./handlers/index.js";
+import { createLlmService } from "./services/llm.service.js";
+import { createParserService } from "./services/parser.service.js";
+import { createWeatherService } from "./services/weather.service.js";
 
 function requireEnv(name: string): string {
   const v = process.env[name]?.trim();
@@ -17,10 +17,10 @@ function requireEnv(name: string): string {
 async function main(): Promise<void> {
   const token = requireEnv("TELEGRAM_BOT_TOKEN");
   const openWeatherKey = requireEnv("OPENWEATHER_API_KEY");
-  const openAiKey = requireEnv("OPENAI_API_KEY");
+  const geminiKey = requireEnv("GEMINI_API_KEY");
 
   const bot = new Bot(token);
-  const llm = createLlmService(openAiKey);
+  const llm = createLlmService(geminiKey);
   const weather = createWeatherService(openWeatherKey);
   const parser = createParserService();
 

@@ -11,11 +11,11 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@google/genai": "^1.49.0",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.5",
-    "grammy": "^1.31.3",
-    "openai": "^6.34.0"
+    "grammy": "^1.31.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

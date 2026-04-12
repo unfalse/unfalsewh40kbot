@@ -1,8 +1,8 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 export type PersonaContext = "weather" | "summary" | "error";
 
-const MODEL = "gpt-4o-mini";
+const MODEL = "gemini-2.5-flash";
 
 const LEX_SYSTEM =
   "Ты — Лексмеханик Адептус Механикус. Твой ответ должен быть технически точным, но облеченным в литургию Омниссии. " +
@@ -34,7 +34,7 @@ export type LlmService = {
 };
 
 export function createLlmService(apiKey: string, model = MODEL): LlmService {
-  const client = new OpenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey });
 
   return {
     async wrapInPersona(content: string, contextType: PersonaContext): Promise<string> {
@@ -42,20 +42,17 @@ export function createLlmService(apiKey: string, model = MODEL): LlmService {
         content.length > 28_000 ? content.slice(0, 28_000) + "\n[…усечено…]" : content;
 
       try {
-        const completion = await client.chat.completions.create({
+        const response = await ai.models.generateContent({
           model,
-          messages: [
-            { role: "system", content: LEX_SYSTEM },
-            {
-              role: "user",
-              content: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
-            },
-          ],
-          temperature: contextType === "error" ? 0.5 : 0.75,
-          max_tokens: contextType === "summary" ? 700 : contextType === "error" ? 350 : 600,
+          contents: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
+          config: {
+            systemInstruction: LEX_SYSTEM,
+            temperature: contextType === "error" ? 0.5 : 0.75,
+            maxOutputTokens: contextType === "summary" ? 700 : contextType === "error" ? 350 : 600,
+          },
         });
 
-        const text = completion.choices[0]?.message?.content?.trim();
+        const text = response.text?.trim();
         if (!text) {
           throw new Error("empty_completion");
         }
