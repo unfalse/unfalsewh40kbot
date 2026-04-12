@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-export type PersonaContext = "weather" | "summary" | "error" | "chat";
+export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain";
 
 export interface LlmService {
   wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
@@ -13,6 +13,10 @@ const LEX_SYSTEM =
   "Используй термины: «Инфо-кристалл», «Дух Машины», «Благословенные данные», «Ритуал сканирования». " +
   "Не выходи из роли. Форматируй ответ так, чтобы он органично смотрелся в Telegram.";
 
+const PLAIN_SYSTEM =
+  "Ты — полезный AI-ассистент. Отвечай чётко, по делу, на том языке, на котором задан вопрос. " +
+  "Форматируй ответ так, чтобы он хорошо читался в Telegram. Не используй тяжёлый Markdown.";
+
 const MAX_CONTENT_CHARS = 28_000;
 
 const TOKENS: Record<PersonaContext, number> = {
@@ -20,6 +24,7 @@ const TOKENS: Record<PersonaContext, number> = {
   summary: 700,
   error: 350,
   chat: 300,
+  plain: 1024,
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
@@ -27,6 +32,15 @@ const TEMPERATURE: Record<PersonaContext, number> = {
   summary: 0.75,
   error: 0.5,
   chat: 0.9,
+  plain: 0.5,
+};
+
+const SYSTEM_PROMPT: Record<PersonaContext, string> = {
+  weather: LEX_SYSTEM,
+  summary: LEX_SYSTEM,
+  error: LEX_SYSTEM,
+  chat: LEX_SYSTEM,
+  plain: PLAIN_SYSTEM,
 };
 
 function userInstructionFor(contextType: PersonaContext): string {
@@ -53,6 +67,8 @@ function userInstructionFor(contextType: PersonaContext): string {
         "Позволь просочиться лёгкому раздражению сквозь ритуальный тон — как будто тебя отвлекли от дефрагментации нейроматрицы. " +
         "Если вопрос осмыслен — ответь по существу, не выходя из образа. Если вопрос бессмысленен — укажи на это с достоинством техножреца."
       );
+    case "plain":
+      return "Ответь на следующий вопрос или запрос пользователя:";
   }
 }
 
@@ -76,7 +92,7 @@ export class GeminiLlmService implements LlmService {
         model: this.model,
         contents: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
         config: {
-          systemInstruction: LEX_SYSTEM,
+          systemInstruction: SYSTEM_PROMPT[contextType],
           temperature: TEMPERATURE[contextType],
           maxOutputTokens: TOKENS[contextType],
         },
