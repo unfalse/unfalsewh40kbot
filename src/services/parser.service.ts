@@ -1,6 +1,6 @@
 import axios, { type AxiosInstance } from "axios";
 import * as cheerio from "cheerio";
-import { assertPublicHttpUrl } from "../util/url";
+import { UrlUtil } from "../util/url";
 
 const MAX_TEXT = 12_000;
 
@@ -9,43 +9,46 @@ export type ParsedPage = {
   text: string;
 };
 
-export type ParserService = {
+export interface ParserService {
   parseUrl(url: string): Promise<ParsedPage>;
-};
+}
 
-export function createParserService(): ParserService {
-  const http: AxiosInstance = axios.create({
-    timeout: 15_000,
-    maxContentLength: 5 * 1024 * 1024,
-    maxBodyLength: 5 * 1024 * 1024,
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (compatible; Vox-Logis-Lexmechanic/1.0; +https://t.me/)",
-      Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
-    },
-    validateStatus: (s) => s >= 200 && s < 400,
-  });
+export class HttpParserService implements ParserService {
+  private readonly http: AxiosInstance;
 
-  return {
-    async parseUrl(raw: string): Promise<ParsedPage> {
-      const safe = assertPublicHttpUrl(raw).toString();
+  constructor() {
+    this.http = axios.create({
+      timeout: 15_000,
+      maxContentLength: 5 * 1024 * 1024,
+      maxBodyLength: 5 * 1024 * 1024,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; Vox-Logis-Lexmechanic/1.0; +https://t.me/)",
+        Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
+      },
+      validateStatus: (s) => s >= 200 && s < 400,
+    });
+  }
 
-      const { data: html } = await http.get<string>(safe, { responseType: "text" });
-      const $ = cheerio.load(html);
+  async parseUrl(raw: string): Promise<ParsedPage> {
+    const safe = UrlUtil.assertPublicHttpUrl(raw).toString();
 
-      const title = $("title").first().text().replace(/\s+/g, " ").trim() || "Безымянный свиток";
+    const { data: html } = await this.http.get<string>(safe, { responseType: "text" });
+    const $ = cheerio.load(html);
 
-      $("script, style, noscript, svg, iframe, template").remove();
+    const title =
+      $("title").first().text().replace(/\s+/g, " ").trim() || "Безымянный свиток";
 
-      let root = $("article").first();
-      if (!root.length) {
-        root = $("body");
-      }
+    $("script, style, noscript, svg, iframe, template").remove();
 
-      const text = root.text().replace(/\s+/g, " ").trim();
-      const clipped = text.length > MAX_TEXT ? text.slice(0, MAX_TEXT) : text;
+    let root = $("article").first();
+    if (!root.length) {
+      root = $("body");
+    }
 
-      return { title, text: clipped };
-    },
-  };
+    const text = root.text().replace(/\s+/g, " ").trim();
+    const clipped = text.length > MAX_TEXT ? text.slice(0, MAX_TEXT) : text;
+
+    return { title, text: clipped };
+  }
 }
