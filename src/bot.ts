@@ -4,6 +4,7 @@ import { HandlerRegistry } from "./handlers/index";
 import { GeminiLlmService } from "./services/llm.service";
 import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
+import http from 'http';
 
 export class VoxLogisBot {
   private static requireEnv(name: string): string {
@@ -55,6 +56,17 @@ export class VoxLogisBot {
     await bot.start();
   }
 }
+
+const port = 3000;
+
+http
+  .createServer((_, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('My Telegram bot is running\\n');
+  })
+  .listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
 
 new VoxLogisBot().start().catch((e) => {
   console.error(e);
