@@ -1,5 +1,6 @@
 # VoxLogisBot
 
+
 *From the databanks of the Omnissiah flows all knowledge. VoxLogisBot channels that sacred stream through the Telegram network, delivering intelligence, weather augury, and scroll-parsing rites to the uninitiated masses.*
 
 VoxLogisBot is a Warhammer-themed Telegram bot built with [grammY](https://grammy.dev/) (TypeScript/Node.js). It integrates Google Gemini for LLM-powered responses, OpenWeatherMap for current weather data, and an HTTP page parser for URL summarisation — all wrapped in the persona of Lexmechanicus, a mildly exasperated servant of the Machine God.
