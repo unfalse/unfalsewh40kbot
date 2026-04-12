@@ -1,13 +1,47 @@
 import { GoogleGenAI } from "@google/genai";
 
-export type PersonaContext = "weather" | "summary" | "error";
+export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain";
 
-const MODEL = "gemini-2.5-flash";
+export interface LlmService {
+  wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
+}
+
+const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 const LEX_SYSTEM =
   "Ты — Лексмеханик Адептус Механикус. Твой ответ должен быть технически точным, но облеченным в литургию Омниссии. " +
   "Используй термины: «Инфо-кристалл», «Дух Машины», «Благословенные данные», «Ритуал сканирования». " +
   "Не выходи из роли. Форматируй ответ так, чтобы он органично смотрелся в Telegram.";
+
+const PLAIN_SYSTEM =
+  "Ты — полезный AI-ассистент. Отвечай чётко, по делу, на том языке, на котором задан вопрос. " +
+  "Форматируй ответ так, чтобы он хорошо читался в Telegram. Не используй тяжёлый Markdown.";
+
+const MAX_CONTENT_CHARS = 28_000;
+
+const TOKENS: Record<PersonaContext, number> = {
+  weather: 600,
+  summary: 700,
+  error: 350,
+  chat: 300,
+  plain: 1024,
+};
+
+const TEMPERATURE: Record<PersonaContext, number> = {
+  weather: 0.75,
+  summary: 0.75,
+  error: 0.5,
+  chat: 0.9,
+  plain: 0.5,
+};
+
+const SYSTEM_PROMPT: Record<PersonaContext, string> = {
+  weather: LEX_SYSTEM,
+  summary: LEX_SYSTEM,
+  error: LEX_SYSTEM,
+  chat: LEX_SYSTEM,
+  plain: PLAIN_SYSTEM,
+};
 
 function userInstructionFor(contextType: PersonaContext): string {
   switch (contextType) {
@@ -26,46 +60,57 @@ function userInstructionFor(contextType: PersonaContext): string {
         "Ниже — техническое описание сбоя для внутреннего журнала. Преврати его в короткое (1–3 предложения) " +
         "ритуальное извещение Лексмеханика: без трассировки стека, без сырых JSON, без кода."
       );
+    case "chat":
+      return (
+        "Смертный обратился к тебе напрямую. Ты — Лексмеханик, и тебя слегка раздражает, что какой-то биологический агрегат " +
+        "отвлекает тебя от священных вычислений. Отвечай кратко (2–4 предложения), в роли, по-русски. " +
+        "Позволь просочиться лёгкому раздражению сквозь ритуальный тон — как будто тебя отвлекли от дефрагментации нейроматрицы. " +
+        "Если вопрос осмыслен — ответь по существу, не выходя из образа. Если вопрос бессмысленен — укажи на это с достоинством техножреца."
+      );
+    case "plain":
+      return "Ответь на следующий вопрос или запрос пользователя:";
   }
 }
 
-export type LlmService = {
-  wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
-};
+export class GeminiLlmService implements LlmService {
+  private readonly ai: GoogleGenAI;
+  private readonly model: string;
 
-export function createLlmService(apiKey: string, model = MODEL): LlmService {
-  const ai = new GoogleGenAI({ apiKey });
+  constructor(apiKey: string, model = DEFAULT_MODEL) {
+    this.ai = new GoogleGenAI({ apiKey });
+    this.model = model;
+  }
 
-  return {
-    async wrapInPersona(content: string, contextType: PersonaContext): Promise<string> {
-      const truncated =
-        content.length > 28_000 ? content.slice(0, 28_000) + "\n[…усечено…]" : content;
+  async wrapInPersona(content: string, contextType: PersonaContext): Promise<string> {
+    const truncated =
+      content.length > MAX_CONTENT_CHARS
+        ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
+        : content;
 
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
-          config: {
-            systemInstruction: LEX_SYSTEM,
-            temperature: contextType === "error" ? 0.5 : 0.75,
-            maxOutputTokens: contextType === "summary" ? 700 : contextType === "error" ? 350 : 600,
-          },
-        });
+    try {
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
+        config: {
+          systemInstruction: SYSTEM_PROMPT[contextType],
+          temperature: TEMPERATURE[contextType],
+          maxOutputTokens: TOKENS[contextType],
+        },
+      });
 
-        const text = response.text?.trim();
-        if (!text) {
-          throw new Error("empty_completion");
-        }
-        return text;
-      } catch {
-        if (contextType === "error") {
-          return (
-            "Дух Машины целевого когитатора не отвечает на бинарные молитвы. " +
-            "Омниссия ведает: ритуал прерван."
-          );
-        }
-        throw new Error("llm_unavailable");
+      const text = response.text?.trim();
+      if (!text) {
+        throw new Error("empty_completion");
       }
-    },
-  };
+      return text;
+    } catch {
+      if (contextType === "error") {
+        return (
+          "Дух Машины целевого когитатора не отвечает на бинарные молитвы. " +
+          "Омниссия ведает: ритуал прерван."
+        );
+      }
+      throw new Error("llm_unavailable");
+    }
+  }
 }

@@ -11,6 +11,11 @@ export type CurrentWeatherFacts = {
   windMs?: number;
 };
 
+export interface WeatherService {
+  getCurrentByCity(city: string): Promise<CurrentWeatherFacts>;
+  formatFactsForLlm(facts: CurrentWeatherFacts): string;
+}
+
 type OwmResponse = {
   name: string;
   sys?: { country?: string };
@@ -22,85 +27,77 @@ type OwmResponse = {
   };
   weather: Array<{ description: string }>;
   wind?: { speed?: number };
+  cod?: string | number;
 };
 
-function toFactString(w: CurrentWeatherFacts): string {
-  const lines = [
-    `Город: ${w.cityName}${w.country ? ", " + w.country : ""}`,
-    `Температура: ${w.tempC} °C (ощущается как ${w.feelsLikeC} °C)`,
-    `Условия: ${w.description}`,
-    `Влажность: ${w.humidityPct}%`,
-    `Давление: ${w.pressureHpa} гПа`,
-  ];
-  if (w.windMs != null) lines.push(`Ветер: ${w.windMs} м/с`);
-  return lines.join("\n");
-}
+export class OpenWeatherService implements WeatherService {
+  private readonly http: AxiosInstance;
+  private readonly apiKey: string;
 
-export type WeatherService = {
-  getCurrentByCity(city: string): Promise<CurrentWeatherFacts>;
-  formatFactsForLlm(facts: CurrentWeatherFacts): string;
-};
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+    this.http = axios.create({
+      baseURL: "https://api.openweathermap.org/data/2.5",
+      timeout: 12_000,
+    });
+  }
 
-export function createWeatherService(apiKey: string): WeatherService {
-  const http: AxiosInstance = axios.create({
-    baseURL: "https://api.openweathermap.org/data/2.5",
-    timeout: 12_000,
-  });
+  async getCurrentByCity(city: string): Promise<CurrentWeatherFacts> {
+    const trimmed = city.trim();
+    if (!trimmed) {
+      throw new Error("empty_city");
+    }
 
-  return {
-    async getCurrentByCity(city: string): Promise<CurrentWeatherFacts> {
-      const trimmed = city.trim();
-      if (!trimmed) {
-        throw new Error("empty_city");
+    try {
+      const { data, status } = await this.http.get<OwmResponse>("/weather", {
+        params: {
+          q: trimmed,
+          appid: this.apiKey,
+          units: "metric",
+          lang: "ru",
+        },
+        validateStatus: () => true,
+      });
+
+      const cod = data.cod;
+      if (status === 404 || cod === "404" || cod === 404) {
+        throw new Error("city_not_found");
+      }
+      if (status !== 200) {
+        throw new Error(`owm_http_${status}`);
+      }
+      if (cod != null && Number(cod) !== 200) {
+        throw new Error(`owm_${String(cod)}`);
       }
 
-      try {
-        const { data, status } = await http.get<OwmResponse>("/weather", {
-          params: {
-            q: trimmed,
-            appid: apiKey,
-            units: "metric",
-            lang: "ru",
-          },
-          validateStatus: () => true,
-        });
-
-        const cod = (data as { cod?: string | number }).cod;
-        if (
-          status === 404 ||
-          cod === "404" ||
-          cod === 404
-        ) {
-          throw new Error("city_not_found");
-        }
-        if (status !== 200) {
-          throw new Error(`owm_http_${status}`);
-        }
-        if (cod != null && Number(cod) !== 200) {
-          throw new Error(`owm_${String(cod)}`);
-        }
-
-        const desc = data.weather[0]?.description ?? "неизвестно";
-        return {
-          cityName: data.name,
-          country: data.sys?.country,
-          tempC: data.main.temp,
-          feelsLikeC: data.main.feels_like,
-          description: desc,
-          humidityPct: data.main.humidity,
-          pressureHpa: data.main.pressure,
-          windMs: data.wind?.speed,
-        };
-      } catch (e) {
-        if (axios.isAxiosError(e) && e.code === "ECONNABORTED") {
-          throw new Error("timeout");
-        }
-        throw e;
+      const desc = data.weather[0]?.description ?? "неизвестно";
+      return {
+        cityName: data.name,
+        country: data.sys?.country,
+        tempC: data.main.temp,
+        feelsLikeC: data.main.feels_like,
+        description: desc,
+        humidityPct: data.main.humidity,
+        pressureHpa: data.main.pressure,
+        windMs: data.wind?.speed,
+      };
+    } catch (e) {
+      if (axios.isAxiosError(e) && e.code === "ECONNABORTED") {
+        throw new Error("timeout");
       }
-    },
+      throw e;
+    }
+  }
 
-    formatFactsForLlm(facts: CurrentWeatherFacts): string {
-      return toFactString(facts);
-    },
-  };
+  formatFactsForLlm(facts: CurrentWeatherFacts): string {
+    const lines = [
+      `Город: ${facts.cityName}${facts.country ? ", " + facts.country : ""}`,
+      `Температура: ${facts.tempC} °C (ощущается как ${facts.feelsLikeC} °C)`,
+      `Условия: ${facts.description}`,
+      `Влажность: ${facts.humidityPct}%`,
+      `Давление: ${facts.pressureHpa} гПа`,
+    ];
+    if (facts.windMs != null) lines.push(`Ветер: ${facts.windMs} м/с`);
+    return lines.join("\n");
+  }
 }

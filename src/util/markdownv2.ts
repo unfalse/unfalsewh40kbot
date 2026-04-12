@@ -1,11 +1,12 @@
 /** https://core.telegram.org/bots/api#markdownv2-style */
-const MD_SPECIAL = "_*[]()~`>#+=|{}.!-" as const;
+export class MarkdownV2 {
+  private static readonly SPECIAL = "_*[]()~`>#+=|{}.!-";
 
-export function escapeMarkdownV2(text: string): string {
-  let s = text.replace(/\\/g, "\\\\");
-  for (const ch of MD_SPECIAL) {
-    s = s.split(ch).join("\\" + ch);
+  static escape(text: string): string {
+    let s = text.replace(/\\/g, "\\\\");
+    for (const ch of MarkdownV2.SPECIAL) {
+      s = s.split(ch).join("\\" + ch);
+    }
+    return s;
   }
-  return s;
 }
-

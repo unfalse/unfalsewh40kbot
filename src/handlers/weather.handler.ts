@@ -2,16 +2,21 @@ import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 import type { WeatherService } from "../services/weather.service";
 
-export function createWeatherCommandHandler(deps: {
-  weather: WeatherService;
-  llm: LlmService;
-}) {
-  return async (ctx: Context) => {
+export class WeatherCommandHandler {
+  private readonly weather: WeatherService;
+  private readonly llm: LlmService;
+
+  constructor(deps: { weather: WeatherService; llm: LlmService }) {
+    this.weather = deps.weather;
+    this.llm = deps.llm;
+  }
+
+  async handle(ctx: Context): Promise<void> {
     const text = ctx.message?.text ?? "";
     const city = text.replace(/^\/weather(@\w+)?\s*/i, "").trim();
 
     if (!city) {
-      const msg = await deps.llm.wrapInPersona(
+      const msg = await this.llm.wrapInPersona(
         "Пользователь вызвал /weather без названия города.",
         "error",
       );
@@ -21,9 +26,9 @@ export function createWeatherCommandHandler(deps: {
 
     try {
       await ctx.replyWithChatAction("typing");
-      const facts = await deps.weather.getCurrentByCity(city);
-      const raw = deps.weather.formatFactsForLlm(facts);
-      const styled = await deps.llm.wrapInPersona(raw, "weather");
+      const facts = await this.weather.getCurrentByCity(city);
+      const raw = this.weather.formatFactsForLlm(facts);
+      const styled = await this.llm.wrapInPersona(raw, "weather");
       await ctx.reply(styled);
     } catch (e) {
       const reason =
@@ -34,11 +39,11 @@ export function createWeatherCommandHandler(deps: {
               ? "Таймаут при обращении к алтарю погоды."
               : e.message
           : "unknown";
-      const msg = await deps.llm.wrapInPersona(
+      const msg = await this.llm.wrapInPersona(
         `Сбой при получении погоды: ${reason}`,
         "error",
       );
       await ctx.reply(msg);
     }
-  };
+  }
 }
