@@ -20,7 +20,7 @@ export class WeatherCommandHandler {
         "Пользователь вызвал /weather без названия города.",
         "error",
       );
-      await ctx.reply(msg);
+      await ctx.reply(msg, { parse_mode: "HTML" });
       return;
     }
 
@@ -29,7 +29,7 @@ export class WeatherCommandHandler {
       const facts = await this.weather.getCurrentByCity(city);
       const raw = this.weather.formatFactsForLlm(facts);
       const styled = await this.llm.wrapInPersona(raw, "weather");
-      await ctx.reply(styled);
+      await ctx.reply(styled, { parse_mode: "HTML" });
     } catch (e) {
       const reason =
         e instanceof Error
@@ -43,7 +43,7 @@ export class WeatherCommandHandler {
         `Сбой при получении погоды: ${reason}`,
         "error",
       );
-      await ctx.reply(msg);
+      await ctx.reply(msg, { parse_mode: "HTML" });
     }
   }
 }

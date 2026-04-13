@@ -1,8 +1,11 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 import type { ParserService } from "../services/parser.service";
-import { MarkdownV2 } from "../util/markdownv2";
 import { UrlUtil } from "../util/url";
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
 
 export class SummaryTextHandler {
   private readonly parser: ParserService;
@@ -32,7 +35,7 @@ export class SummaryTextHandler {
         "Пользователь прислал URL, который схема безопасности культа отклонила (localhost, приватная сеть и т.п.).",
         "error",
       );
-      await ctx.reply(msg);
+      await ctx.reply(msg, { parse_mode: "HTML" });
       return;
     }
 
@@ -43,18 +46,16 @@ export class SummaryTextHandler {
       const bundle = `Заголовок страницы: ${title}\n\nТекст:\n${body}`;
       const bullets = await this.llm.wrapInPersona(bundle, "summary");
 
-      const md =
-        `*${MarkdownV2.escape(title)}*\n\n` +
-        `||${MarkdownV2.escape(bullets)}||`;
+      const html = `<b>${escapeHtml(title)}</b>\n\n${bullets}`;
 
-      await ctx.reply(md, { parse_mode: "MarkdownV2" });
+      await ctx.reply(html, { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       const msg = await this.llm.wrapInPersona(
         `Не удалось выполнить ритуал Cogitator Summary по ссылке. Причина: ${reason}`,
         "error",
       );
-      await ctx.reply(msg);
+      await ctx.reply(msg, { parse_mode: "HTML" });
     }
   }
 }

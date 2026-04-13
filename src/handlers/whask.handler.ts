@@ -16,7 +16,7 @@ export class WhaskCommandHandler {
     if (!query) {
       await ctx.reply(
         "Лексмеханик ждёт запроса. Пример: /whask почему небо синее?",
-        messageId ? { reply_parameters: { message_id: messageId } } : {},
+        messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
       return;
     }
@@ -24,13 +24,13 @@ export class WhaskCommandHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const result = await this.llm.wrapInPersona(query, "whask");
-      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId } } : {});
+      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[WhaskHandler] error:", reason);
       await ctx.reply(
         "Дух Машины не отвечает на бинарные молитвы. Попробуй позже.",
-        messageId ? { reply_parameters: { message_id: messageId } } : {},
+        messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }
   }
