@@ -35,6 +35,7 @@ export class MentionHandler {
     if (!stripped) {
       await ctx.reply(EMPTY_MENTION_REPLY, {
         reply_parameters: { message_id: messageId },
+        parse_mode: "HTML",
       });
       return;
     }
@@ -44,6 +45,7 @@ export class MentionHandler {
       const result = await this.llm.wrapInPersona(stripped, "chat");
       await ctx.reply(result, {
         reply_parameters: { message_id: messageId },
+        parse_mode: "HTML",
       });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
@@ -54,6 +56,7 @@ export class MentionHandler {
       );
       await ctx.reply(errMsg, {
         reply_parameters: { message_id: messageId },
+        parse_mode: "HTML",
       });
     }
   }

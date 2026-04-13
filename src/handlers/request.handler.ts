@@ -18,21 +18,21 @@ export class RequestCommandHandler {
         "Пользователь вызвал /request без текста обращения.",
         "error",
       );
-      await ctx.reply(msg, messageId ? { reply_parameters: { message_id: messageId } } : {});
+      await ctx.reply(msg, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
       return;
     }
 
     try {
       await ctx.replyWithChatAction("typing");
       const result = await this.llm.wrapInPersona(query, "chat");
-      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId } } : {});
+      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       const errMsg = await this.llm.wrapInPersona(
         `Сбой при обработке /request: ${reason}`,
         "error",
       );
-      await ctx.reply(errMsg, messageId ? { reply_parameters: { message_id: messageId } } : {});
+      await ctx.reply(errMsg, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     }
   }
 }

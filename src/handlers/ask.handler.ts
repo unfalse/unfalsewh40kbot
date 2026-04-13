@@ -16,7 +16,7 @@ export class AskCommandHandler {
     if (!query) {
       await ctx.reply(
         "Задай вопрос после команды. Пример: /ask как работает TCP?",
-        messageId ? { reply_parameters: { message_id: messageId } } : {},
+        messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
       return;
     }
@@ -24,13 +24,13 @@ export class AskCommandHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const result = await this.llm.wrapInPersona(query, "plain");
-      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId } } : {});
+      await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[AskHandler] error:", reason);
       await ctx.reply(
         "Не удалось получить ответ. Попробуй ещё раз.",
-        messageId ? { reply_parameters: { message_id: messageId } } : {},
+        messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }
   }

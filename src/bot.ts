@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import { createServer } from "node:http";
 import { Bot, GrammyError, HttpError } from "grammy";
 import { HandlerRegistry } from "./handlers/index";
@@ -56,10 +56,11 @@ export class VoxLogisBot {
           `Внутренний перехватчик grammY зафиксировал: ${reason}`,
           "error",
         );
-        await ctx.reply(msg);
+        await ctx.reply(msg, { parse_mode: "HTML" });
       } catch {
         await ctx.reply(
           "Дух Машины целевого когитатора не отвечает на бинарные молитвы.",
+          { parse_mode: "HTML" },
         );
       }
     });
