@@ -4,6 +4,7 @@ import type { ParserService } from "../services/parser.service";
 import type { WeatherService } from "../services/weather.service";
 import { AskCommandHandler } from "./ask.handler";
 import { MentionHandler } from "./mention.handler";
+import { WhaskCommandHandler } from "./whask.handler";
 import { RequestCommandHandler } from "./request.handler";
 import { SummaryTextHandler } from "./summary.handler";
 import { WeatherCommandHandler } from "./weather.handler";
@@ -20,6 +21,7 @@ export class HandlerRegistry {
   private readonly mentionHandler: MentionHandler;
   private readonly requestHandler: RequestCommandHandler;
   private readonly askHandler: AskCommandHandler;
+  private readonly whaskHandler: WhaskCommandHandler;
 
   constructor(deps: BotDeps) {
     this.weatherHandler = new WeatherCommandHandler(deps);
@@ -27,6 +29,7 @@ export class HandlerRegistry {
     this.mentionHandler = new MentionHandler({ llm: deps.llm });
     this.requestHandler = new RequestCommandHandler({ llm: deps.llm });
     this.askHandler = new AskCommandHandler({ llm: deps.llm });
+    this.whaskHandler = new WhaskCommandHandler({ llm: deps.llm });
   }
 
   register(bot: Bot): void {
@@ -42,6 +45,7 @@ export class HandlerRegistry {
     bot.command("weather", (ctx) => this.weatherHandler.handle(ctx));
     bot.command("request", (ctx) => this.requestHandler.handle(ctx));
     bot.command("ask", (ctx) => this.askHandler.handle(ctx));
+    bot.command("whask", (ctx) => this.whaskHandler.handle(ctx));
     bot.on("message:text", (ctx) => this.mentionHandler.handle(ctx));
     bot.on("message:text", (ctx) => this.summaryHandler.handle(ctx));
   }

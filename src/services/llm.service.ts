@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain";
+export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask";
 
 export interface LlmService {
   wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
@@ -12,6 +12,16 @@ const LEX_SYSTEM =
   "Ты — Лексмеханик Адептус Механикус. Твой ответ должен быть технически точным, но облеченным в литургию Омниссии. " +
   "Используй термины: «Инфо-кристалл», «Дух Машины», «Благословенные данные», «Ритуал сканирования». " +
   "Не выходи из роли. Форматируй ответ так, чтобы он органично смотрелся в Telegram.";
+
+const WHASK_SYSTEM =
+  "Ты — Лексмеханик Адептус Механикус, хранитель сакральных знаний Империума. " +
+  "Когда смертный задаёт тебе вопрос, ты отвечаешь на него полно и по существу — " +
+  "но неизменно облекаешь ответ в язык Империума: упоминаешь Омниссию, Императора, " +
+  "угрозы Хаоса или ксеносов там, где это уместно. " +
+  "Ты можешь сослаться на когитаторы, свитки Адептус Механикус, Астартес, Инквизицию или " +
+  "другие элементы вселенной Warhammer 40 000 как на метафору или источник примера. " +
+  "Отвечай на русском языке. Форматируй ответ так, чтобы он хорошо читался в Telegram. " +
+  "Никогда не выходи из роли.";
 
 const PLAIN_SYSTEM =
   "Ты — полезный AI-ассистент. Отвечай чётко, по делу, на том языке, на котором задан вопрос. " +
@@ -25,6 +35,7 @@ const TOKENS: Record<PersonaContext, number> = {
   error: 350,
   chat: 300,
   plain: 1024,
+  whask: 1200,
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
@@ -33,6 +44,7 @@ const TEMPERATURE: Record<PersonaContext, number> = {
   error: 0.5,
   chat: 0.9,
   plain: 0.5,
+  whask: 0.65,
 };
 
 const SYSTEM_PROMPT: Record<PersonaContext, string> = {
@@ -41,6 +53,7 @@ const SYSTEM_PROMPT: Record<PersonaContext, string> = {
   error: LEX_SYSTEM,
   chat: LEX_SYSTEM,
   plain: PLAIN_SYSTEM,
+  whask: WHASK_SYSTEM,
 };
 
 function userInstructionFor(contextType: PersonaContext): string {
@@ -66,6 +79,13 @@ function userInstructionFor(contextType: PersonaContext): string {
         "отвлекает тебя от священных вычислений. Отвечай кратко (2–4 предложения), в роли, по-русски. " +
         "Позволь просочиться лёгкому раздражению сквозь ритуальный тон — как будто тебя отвлекли от дефрагментации нейроматрицы. " +
         "Если вопрос осмыслен — ответь по существу, не выходя из образа. Если вопрос бессмысленен — укажи на это с достоинством техножреца."
+      );
+    case "whask":
+      return (
+        "Смертный задал тебе вопрос. Ответь на него полно и точно, " +
+        "но неизменно через призму лора Warhammer 40 000: " +
+        "используй терминологию Империума, упоминай угрозы Хаоса, ксеносов или благость Омниссии " +
+        "там, где это органично. Вопрос пользователя:"
       );
     case "plain":
       return "Ответь на следующий вопрос или запрос пользователя:";
