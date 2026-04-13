@@ -1,14 +1,18 @@
-version: '3.8'
-
 services:
   vox-logis-bot:
     build: .
     container_name: vox-logis-bot
-    restart: always
+    restart: unless-stopped
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
     logging:
       driver: "json-file"
       options:
