@@ -14,9 +14,6 @@ export class MentionHandler {
 
   async handle(ctx: Context): Promise<void> {
     const text = ctx.message?.text;
-    const from = ctx.message?.from;
-    const chatId = ctx.message?.chat.id;
-    console.log("[MentionHandler] incoming", { from: from?.username ?? from?.id, chatId, text });
 
     if (!text) return;
 
@@ -24,7 +21,6 @@ export class MentionHandler {
     if (!me?.username) return;
 
     if (!text.toLowerCase().includes("@" + me.username.toLowerCase())) {
-      console.log("[MentionHandler] no mention, skipping");
       return;
     }
 
@@ -34,12 +30,9 @@ export class MentionHandler {
       .replace(/\s+/g, " ")
       .trim();
 
-    console.log("[MentionHandler] mention detected, stripped prompt:", JSON.stringify(stripped));
-
     const messageId = ctx.message!.message_id;
 
     if (!stripped) {
-      console.log("[MentionHandler] empty prompt, sending static reply");
       await ctx.reply(EMPTY_MENTION_REPLY, {
         reply_parameters: { message_id: messageId },
       });
@@ -49,7 +42,6 @@ export class MentionHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const result = await this.llm.wrapInPersona(stripped, "chat");
-      console.log("[MentionHandler] LLM reply:", JSON.stringify(result));
       await ctx.reply(result, {
         reply_parameters: { message_id: messageId },
       });

@@ -15,10 +15,7 @@ export class AskCommandHandler {
     const chatId = ctx.message?.chat.id;
     const messageId = ctx.message?.message_id;
 
-    console.log("[AskHandler] incoming", { from: from?.username ?? from?.id, chatId, query });
-
     if (!query) {
-      console.log("[AskHandler] empty query");
       await ctx.reply(
         "Задай вопрос после команды. Пример: /ask как работает TCP?",
         messageId ? { reply_parameters: { message_id: messageId } } : {},
@@ -29,7 +26,6 @@ export class AskCommandHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const result = await this.llm.wrapInPersona(query, "plain");
-      console.log("[AskHandler] reply length:", result.length);
       await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId } } : {});
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
