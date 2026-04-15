@@ -32,7 +32,7 @@ export class SummaryTextHandler {
       UrlUtil.assertPublicHttpUrl(first);
     } catch {
       const msg = await this.llm.wrapInPersona(
-        "Пользователь прислал URL, который схема безопасности культа отклонила (localhost, приватная сеть и т.п.).",
+        "Пользователь передал URL, заблокированный системой безопасности: localhost или приватная сеть.",
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });
@@ -52,7 +52,7 @@ export class SummaryTextHandler {
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       const msg = await this.llm.wrapInPersona(
-        `Не удалось выполнить ритуал Cogitator Summary по ссылке. Причина: ${reason}`,
+        `Не удалось обработать ссылку. Причина: ${reason}`,
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });

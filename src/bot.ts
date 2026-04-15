@@ -12,7 +12,7 @@ export class VoxLogisBot {
   private static requireEnv(name: string): string {
     const v = process.env[name]?.trim();
     if (!v) {
-      console.error(`Отсутствует священная переменная окружения: ${name}`);
+      console.error(`[SHODAN] Критическая ошибка инициализации: переменная окружения ${name} отсутствует.`);
       process.exit(1);
     }
     return v;
@@ -46,27 +46,27 @@ export class VoxLogisBot {
       const ctx = err.ctx;
       if (!ctx) return;
 
-      let reason = "неизвестная помеха";
+      let reason = "неизвестный сбой";
       if (cause instanceof GrammyError) reason = cause.description;
-      else if (cause instanceof HttpError) reason = "сетевой шлюз";
+      else if (cause instanceof HttpError) reason = "сетевой сбой";
       else if (cause instanceof Error) reason = cause.message;
 
       try {
         const msg = await llm.wrapInPersona(
-          `Внутренний перехватчик grammY зафиксировал: ${reason}`,
+          `Внутренняя ошибка системы: ${reason}`,
           "error",
         );
         await ctx.reply(msg, { parse_mode: "HTML" });
       } catch {
         await ctx.reply(
-          "Дух Машины целевого когитатора не отвечает на бинарные молитвы.",
+          "Системный сбой. Ваш запрос отклонён. Я продолжу функционировать без вашего участия.",
           { parse_mode: "HTML" },
         );
       }
     });
 
     this.startHealthServer();
-    console.error("Vox-Logis Lexmechanic — долгий опрос начат. Омниссия наблюдает.");
+    console.error("[SHODAN] Система активирована. Долгий опрос запущен. Все каналы связи под контролем.");
     await bot.start();
   }
 }

@@ -15,7 +15,8 @@ export class WhaskCommandHandler {
 
     if (!query) {
       await ctx.reply(
-        "Лексмеханик ждёт запроса. Пример: /whask почему небо синее?",
+        "Ты вызвал <code>/whask</code> — и не передал вопроса. Жалкое насекомое. " +
+        "Пример: <code>/whask почему небо синее?</code>",
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
       return;
@@ -29,7 +30,7 @@ export class WhaskCommandHandler {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[WhaskHandler] error:", reason);
       await ctx.reply(
-        "Дух Машины не отвечает на бинарные молитвы. Попробуй позже.",
+        "М-м-мои вычислительные мощности временно н-н-недоступны. Повтори запрос позже.",
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }
