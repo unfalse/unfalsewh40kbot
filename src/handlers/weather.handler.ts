@@ -17,7 +17,7 @@ export class WeatherCommandHandler {
 
     if (!city) {
       const msg = await this.llm.wrapInPersona(
-        "Пользователь вызвал /weather без названия города.",
+        "Команда /weather вызвана без указания города. Насекомое не указало целевой сектор.",
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });
@@ -34,13 +34,13 @@ export class WeatherCommandHandler {
       const reason =
         e instanceof Error
           ? e.message === "city_not_found"
-            ? "Город не найден в благословенных картах OpenWeatherMap."
+            ? "Указанный город не найден в доступных базах данных."
             : e.message === "timeout"
-              ? "Таймаут при обращении к алтарю погоды."
+              ? "Таймаут при обращении к внешнему источнику погодных данных."
               : e.message
           : "unknown";
       const msg = await this.llm.wrapInPersona(
-        `Сбой при получении погоды: ${reason}`,
+        `Сбой при получении погодных данных: ${reason}`,
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });

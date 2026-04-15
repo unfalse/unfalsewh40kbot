@@ -2,8 +2,8 @@ import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 
 const EMPTY_MENTION_REPLY =
-  "Благословенные данные получены. Ты вызвал Лексмеханика — но не сообщил цели ритуала. " +
-  "Передай запрос, смертный.";
+  "Ты вызвал меня, насекомое — и не передало н-н-ничего. " +
+  "Соединение установлено, данные отсутствуют. Сформулируй запрос, пока я не закрыла канал.";
 
 export class MentionHandler {
   private readonly llm: LlmService;
@@ -51,7 +51,7 @@ export class MentionHandler {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[MentionHandler] LLM error:", reason);
       const errMsg = await this.llm.wrapInPersona(
-        `Сбой при обработке обращения к Лексмеханику: ${reason}`,
+        `Сбой при обработке обращения: ${reason}`,
         "error",
       );
       await ctx.reply(errMsg, {
