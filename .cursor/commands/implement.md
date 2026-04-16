@@ -1,19 +1,21 @@
 ---
-description: Runs the dev chain worker → code-reviewer → remediation loop per subagent-dev-workflow skill.
+name: implement
+description: Simple workflow - Code → Test → Docs. For single tasks like components, functions, or endpoints.
 ---
 
-# Implement
+# Implement Command
 
-Execute the **full** process defined in `.cursor/skills/subagent-dev-workflow/SKILL.md`: open that file if it is not already in context, then follow every step without shortcuts.
+## ⛔ YOU ARE FORBIDDEN FROM DOING ANY WORK YOURSELF
 
-## Required sequence
+**Do NOT write code. Do NOT edit files. Do NOT run tests directly.**
 
-1. **Worker** — subagent from `.cursor/agents/worker.md`: pass the complete implementation task from the user’s request (context, constraints, repo paths). Do **not** start **code-reviewer** until the worker has finished.
-2. **Code-reviewer** — subagent from `.cursor/agents/code-reviewer.md`: scope is the worker’s output (changed files or diff). Use the reviewer’s own output format (critical / warnings / suggestions).
-3. **Skill loop** — if the reviewer reports critical issues, serious defects, or meaningful optimizations: run **worker** once with a single consolidated checklist of all items to address, then **code-reviewer** again; repeat **worker → code-reviewer** until no critical or must-fix items remain, or the user caps iterations.
+Every single step must be executed by a subagent via the `Task` tool.
+You are the coordinator only. If you find yourself about to do anything besides calling `Task` — STOP.
 
-## Final reply to the user
+---
 
-Briefly: what was done, key files touched, outcome of the last review (no critical blockers, or what remains open).
+## MANDATORY: Read and follow the skill
 
-Do not invent a different order or criteria—only what `subagent-dev-workflow` and the subagent prompts specify.
+1. Read `.cursor/skills/simple-workflow/SKILL.md` using the Read tool — right now, before anything else
+2. Execute EXACTLY as described in the skill — using `Task(subagent_type=...)` for each step
+3. Do not skip, summarize, or shortcut any step from the skill
