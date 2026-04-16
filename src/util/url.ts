@@ -27,7 +27,8 @@ export class UrlUtil {
     if (u.protocol !== "http:" && u.protocol !== "https:") {
       throw new Error("bad_protocol");
     }
-    const host = u.hostname.toLowerCase();
+    // Strip IPv6 bracket delimiters so "[::1]" matches "::1" in BLOCKED
+    const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, "");
     if (UrlUtil.BLOCKED.has(host) || host.endsWith(".localhost")) {
       throw new Error("forbidden_host");
     }
