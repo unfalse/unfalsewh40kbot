@@ -1,5 +1,6 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
+import { messages } from "../config/messages";
 
 export class AskCommandHandler {
   private readonly llm: LlmService;
@@ -15,8 +16,7 @@ export class AskCommandHandler {
 
     if (!query) {
       await ctx.reply(
-        "Ты осмелился вызвать <code>/ask</code> — и не передал н-н-ничего. " +
-        "Пример использования: <code>/ask как работает TCP?</code>",
+        messages.handlers.ask.empty_query,
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
       return;
@@ -30,7 +30,7 @@ export class AskCommandHandler {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[AskHandler] error:", reason);
       await ctx.reply(
-        "М-м-мои вычислительные узлы не смогли обработать запрос. Повтори позже, насекомое.",
+        messages.handlers.ask.error,
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }

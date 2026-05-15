@@ -1,9 +1,6 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
-
-const EMPTY_MENTION_REPLY =
-  "Ты вызвал меня, насекомое — и не передало н-н-ничего. " +
-  "Соединение установлено, данные отсутствуют. Сформулируй запрос, пока я не закрыла канал.";
+import { messages } from "../config/messages";
 
 export class MentionHandler {
   private readonly llm: LlmService;
@@ -33,7 +30,7 @@ export class MentionHandler {
     const messageId = ctx.message!.message_id;
 
     if (!stripped) {
-      await ctx.reply(EMPTY_MENTION_REPLY, {
+      await ctx.reply(messages.handlers.mention.empty, {
         reply_parameters: { message_id: messageId },
         parse_mode: "HTML",
       });

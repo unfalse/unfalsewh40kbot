@@ -1,5 +1,6 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
+import { messages, fmt } from "../config/messages";
 
 export class RequestCommandHandler {
   private readonly llm: LlmService;
@@ -15,7 +16,7 @@ export class RequestCommandHandler {
 
     if (!query) {
       const msg = await this.llm.wrapInPersona(
-        "Команда /request вызвана без текста. Насекомое не удосужилось сформулировать запрос.",
+        messages.handlers.request.empty_query_prompt,
         "error",
       );
       await ctx.reply(msg, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
@@ -29,7 +30,7 @@ export class RequestCommandHandler {
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       const errMsg = await this.llm.wrapInPersona(
-        `Сбой при обработке команды /request: ${reason}`,
+        fmt(messages.handlers.request.error_prefix, { reason }),
         "error",
       );
       await ctx.reply(errMsg, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
