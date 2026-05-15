@@ -13,12 +13,12 @@ const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 const MAX_CONTENT_CHARS = 28_000;
 
 const TOKENS: Record<PersonaContext, number> = {
-  weather: 600,
+  weather: 300,
   summary: 700,
-  error: 350,
-  chat: 300,
-  plain: 1024,
-  whask: 1200,
+  error: 200,
+  chat: 200,
+  plain: 300,
+  whask: 300,
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
@@ -51,33 +51,36 @@ export class GeminiLlmService implements LlmService {
     this.model = model;
   }
 
+  private async callModel(prompt: string, contextType: PersonaContext): Promise<string> {
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents: prompt,
+      config: {
+        systemInstruction: systemPromptFor(contextType),
+        temperature: TEMPERATURE[contextType],
+        maxOutputTokens: TOKENS[contextType],
+      },
+    });
+    const raw = response.text?.trim();
+    if (!raw) throw new Error("empty_completion");
+    return sanitizeTelegramHtml(raw);
+  }
+
   async wrapInPersona(content: string, contextType: PersonaContext): Promise<string> {
     const truncated =
       content.length > MAX_CONTENT_CHARS
         ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
         : content;
+    const prompt = `${userInstructionFor(contextType)}\n\n---\n${truncated}`;
 
-    try {
-      const response = await this.ai.models.generateContent({
-        model: this.model,
-        contents: `${userInstructionFor(contextType)}\n\n---\n${truncated}`,
-        config: {
-          systemInstruction: systemPromptFor(contextType),
-          temperature: TEMPERATURE[contextType],
-          maxOutputTokens: TOKENS[contextType],
-        },
-      });
-
-      const raw = response.text?.trim();
-      if (!raw) {
-        throw new Error("empty_completion");
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await this.callModel(prompt, contextType);
+      } catch {
+        if (contextType === "error") return messages.llm.fallback_error;
+        if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 60_000));
       }
-      return sanitizeTelegramHtml(raw);
-    } catch {
-      if (contextType === "error") {
-        return messages.llm.fallback_error;
-      }
-      throw new Error("llm_unavailable");
     }
+    throw new Error("llm_unavailable");
   }
 }
