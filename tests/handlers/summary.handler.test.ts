@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SummaryTextHandler } from "../../src/handlers/summary.handler";
-import { makeFakeCtx, makeMockLlm, makeMockParser } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockParser, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("SummaryTextHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
   let parser: ReturnType<typeof makeMockParser>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: SummaryTextHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
     parser = makeMockParser();
-    handler = new SummaryTextHandler({ parser, llm });
+    prefs = makeMockPrefs();
+    handler = new SummaryTextHandler({ parser, llm, prefs });
   });
 
   // ── Happy paths ────────────────────────────────────────────────────────────
@@ -27,6 +29,7 @@ describe("SummaryTextHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("page content"),
       "summary",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
     const replyArg = vi.mocked(ctx.reply).mock.calls[0][0] as string;
@@ -46,7 +49,7 @@ describe("SummaryTextHandler", () => {
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(parser.parseUrl).toHaveBeenCalledWith("https://example.com");
     expect(ctx.reply).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "summary");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "summary", "ru");
   });
 
   it("happy path (text_link entity) — uses entity.url and calls parser with it", async () => {
@@ -60,7 +63,7 @@ describe("SummaryTextHandler", () => {
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(parser.parseUrl).toHaveBeenCalledWith("https://example.com");
     expect(ctx.reply).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "summary");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "summary", "ru");
   });
 
   // ── Early return guards ────────────────────────────────────────────────────
@@ -114,7 +117,7 @@ describe("SummaryTextHandler", () => {
     await handler.handle(ctx);
 
     expect(parser.parseUrl).not.toHaveBeenCalled();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error", "ru");
     expect(ctx.reply).toHaveBeenCalledOnce();
     const replyArg = vi.mocked(ctx.reply).mock.calls[0][0] as string;
     expect(replyArg).toBe("blocked error response");
@@ -125,7 +128,7 @@ describe("SummaryTextHandler", () => {
     const ctx = makeFakeCtx({ text: "check http://169.254.169.254/latest/meta-data" });
     await handler.handle(ctx);
     expect(parser.parseUrl).not.toHaveBeenCalled();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error", "ru");
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
 
@@ -136,7 +139,7 @@ describe("SummaryTextHandler", () => {
     await handler.handle(ctx);
 
     expect(parser.parseUrl).not.toHaveBeenCalled();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error", "ru");
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
 
@@ -152,6 +155,7 @@ describe("SummaryTextHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("parse_failed"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
     const replyArg = vi.mocked(ctx.reply).mock.calls[0][0] as string;

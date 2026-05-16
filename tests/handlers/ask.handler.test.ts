@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AskCommandHandler } from "../../src/handlers/ask.handler";
-import { makeFakeCtx, makeMockLlm } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("AskCommandHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: AskCommandHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
-    handler = new AskCommandHandler({ llm });
+    prefs = makeMockPrefs();
+    handler = new AskCommandHandler({ llm, prefs });
   });
 
   it("happy path — calls LLM with trimmed query and replies with result", async () => {
@@ -19,7 +21,7 @@ describe("AskCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "LLM answer",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -44,7 +46,7 @@ describe("AskCommandHandler", () => {
     await handler.handle(ctx);
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ parse_mode: "HTML" }),

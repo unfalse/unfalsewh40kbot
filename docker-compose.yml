@@ -7,6 +7,10 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MESSAGES=${MESSAGES:-lexmechanic.yaml}
+      - DATA_DIR=/app/data
+    volumes:
+      - bot-data:/app/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
       interval: 30s
@@ -18,3 +22,6 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  bot-data:

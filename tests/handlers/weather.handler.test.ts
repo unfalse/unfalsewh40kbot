@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { WeatherCommandHandler } from "../../src/handlers/weather.handler";
-import { makeFakeCtx, makeMockLlm, makeMockWeather } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockWeather, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("WeatherCommandHandler", () => {
   let weather: ReturnType<typeof makeMockWeather>;
   let llm: ReturnType<typeof makeMockLlm>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: WeatherCommandHandler;
 
   beforeEach(() => {
     weather = makeMockWeather();
     llm = makeMockLlm();
-    handler = new WeatherCommandHandler({ weather, llm });
+    prefs = makeMockPrefs();
+    handler = new WeatherCommandHandler({ weather, llm, prefs });
   });
 
   it("happy path — fetches weather, formats facts, calls LLM with weather context, replies with result", async () => {
@@ -25,7 +27,7 @@ describe("WeatherCommandHandler", () => {
     expect(weather.formatFactsForLlm).toHaveBeenCalledOnce();
     const facts = await vi.mocked(weather.getCurrentByCity).mock.results[0].value;
     expect(weather.formatFactsForLlm).toHaveBeenCalledWith(facts);
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("facts text", "weather");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("facts text", "weather", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "weather report",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -38,7 +40,7 @@ describe("WeatherCommandHandler", () => {
     await handler.handle(ctx);
 
     expect(weather.getCurrentByCity).not.toHaveBeenCalled();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(expect.any(String), "error", "ru");
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
 
@@ -49,8 +51,9 @@ describe("WeatherCommandHandler", () => {
     await expect(handler.handle(ctx)).resolves.toBeUndefined();
 
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
-      expect.stringContaining("не найден"),
+      expect.stringContaining("отсутствует"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
@@ -64,6 +67,7 @@ describe("WeatherCommandHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("аймаут"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
@@ -77,6 +81,7 @@ describe("WeatherCommandHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("owm_401"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
@@ -88,6 +93,6 @@ describe("WeatherCommandHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith(customFormatted, "weather");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith(customFormatted, "weather", "ru");
   });
 });

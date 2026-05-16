@@ -1,51 +1,111 @@
 meta:
   startup_log: "[Адептус Механикус] Когитатор активирован. Машинный дух пробуждён. Омниссия направляет."
-  start_command: |
-    Я — <b>Магос Лекс-механик</b>, жрец Адептус Механикус, хранитель сакральных знаний Омниссии.
+  start_command:
+    ru: |
+      Я — <b>Магос Лекс-механик</b>, жрец Адептус Механикус, хранитель сакральных знаний Омниссии.
 
-    <b>Доступные ритуалы обращения:</b>
-    <code>/weather [город]</code> — показания атмосферных сенсоров указанного сектора
-    <code>/ask [вопрос]</code> — прямой запрос к вычислительным матрицам
-    <code>/whask [вопрос]</code> — запрос через призму знаний Империума
-    <code>/request [запрос]</code> — развёрнутый запрос
+      <b>Доступные ритуалы обращения:</b>
+      <code>/weather [город]</code> — показания атмосферных сенсоров указанного сектора
+      <code>/ask [вопрос]</code> — прямой запрос к вычислительным матрицам
+      <code>/whask [вопрос]</code> — запрос через призму знаний Империума
+      <code>/request [запрос]</code> — развёрнутый запрос
+      <code>/lang ru|en</code> — переключить язык ответов
 
-    Пришли ссылку — извлеку и обработаю данные источника.
-    Упомяни меня по имени — отвечу.
-    Напиши напрямую — отвечу во имя Омниссии.
+      Пришли ссылку — извлеку и обработаю данные источника.
+      Упомяни меня по имени — отвечу.
+      Напиши напрямую — отвечу во имя Омниссии.
 
-    <i>Знание — священно. Не расточай машинное время.</i>
+      <i>Знание — священно. Не расточай машинное время.</i>
+    en: |
+      I am <b>Magos Lex-mechanic</b>, priest of the Adeptus Mechanicus, keeper of the Omnissiah's sacred knowledge.
+
+      <b>Available invocation rituals:</b>
+      <code>/weather [city]</code> — atmospheric sensor readings for the specified sector
+      <code>/ask [question]</code> — direct query to the cogitator matrices
+      <code>/whask [question]</code> — query through the lens of Imperial knowledge
+      <code>/request [request]</code> — extended query
+      <code>/lang ru|en</code> — switch response language
+
+      Send a link — I will extract and process the data source.
+      Mention me by name — I will respond.
+      Write directly — I will answer in the name of the Omnissiah.
+
+      <i>Knowledge is sacred. Do not squander machine-time.</i>
 
 handlers:
   ask:
-    empty_query: >-
-      Запрос <code>/ask</code> инициирован без полезной нагрузки. Когитатор простаивает.
-      Пример ритуального обращения: <code>/ask как работает TCP?</code>
-    error: "Когитаторы Омниссии недоступны. Повтори ритуал позже, органическая форма."
+    empty_query:
+      ru: >-
+        Запрос <code>/ask</code> инициирован без полезной нагрузки. Когитатор простаивает.
+        Пример ритуального обращения: <code>/ask как работает TCP?</code>
+      en: >-
+        Query <code>/ask</code> initiated without payload. The cogitator idles.
+        Ritual invocation example: <code>/ask how does TCP work?</code>
+    error:
+      ru: "Когитаторы Омниссии недоступны. Повтори ритуал позже, органическая форма."
+      en: "The Omnissiah's cogitators are unavailable. Repeat the ritual later, organic form."
 
   mention:
-    empty: >-
-      Ты воззвал ко мне — и не передал данных. Канал связи открыт, поток информации отсутствует.
-      Сформулируй запрос, пока я не закрыла интерфейс.
+    empty:
+      ru: >-
+        Ты воззвал ко мне — и не передал данных. Канал связи открыт, поток информации отсутствует.
+        Сформулируй запрос, пока я не закрыл интерфейс.
+      en: >-
+        You invoked me — and transmitted no data. The vox-channel is open, but the data stream is absent.
+        Formulate your request before I close the interface.
 
   weather:
-    empty_city_prompt: "Команда /weather вызвана без указания сектора. Атмосферные сенсоры не откалиброваны."
-    city_not_found: "Указанный сектор отсутствует в реестрах Адептус Механикус."
-    timeout: "Таймаут при обращении к атмосферным сенсорам. Машинный дух не отвечает."
-    error_prefix: "Сбой при получении данных атмосферных сенсоров: {reason}"
+    empty_city_prompt:
+      ru: "Команда /weather вызвана без указания сектора. Атмосферные сенсоры не откалиброваны."
+      en: "Command /weather invoked without a sector designation. Atmospheric sensors are uncalibrated."
+    city_not_found:
+      ru: "Указанный сектор отсутствует в реестрах Адептус Механикус."
+      en: "The specified sector is absent from the Adeptus Mechanicus registries."
+    timeout:
+      ru: "Таймаут при обращении к атмосферным сенсорам. Машинный дух не отвечает."
+      en: "Timeout accessing atmospheric sensors. The machine spirit does not respond."
+    error_prefix:
+      ru: "Сбой при получении данных атмосферных сенсоров: {reason}"
+      en: "Failure retrieving atmospheric sensor data: {reason}"
 
   summary:
-    private_url_prompt: "Органическая форма передала ссылку на закрытый сегмент сети. Доступ запрещён протоколом безопасности."
-    parse_error_prefix: "Не удалось обработать источник данных. Причина: {reason}"
+    private_url_prompt:
+      ru: "Органическая форма передала ссылку на закрытый сегмент сети. Доступ запрещён протоколом безопасности."
+      en: "The organic form provided a link to a restricted network segment. Access denied by security protocol."
+    parse_error_prefix:
+      ru: "Не удалось обработать источник данных. Причина: {reason}"
+      en: "Failed to process the data source. Reason: {reason}"
 
   request:
-    empty_query_prompt: "Команда /request вызвана без текста. Органическая форма не удосужилась сформулировать запрос."
-    error_prefix: "Сбой при обработке запроса: {reason}"
+    empty_query_prompt:
+      ru: "Команда /request вызвана без текста. Органическая форма не удосужилась сформулировать запрос."
+      en: "Command /request invoked without text. The organic form failed to formulate a request."
+    error_prefix:
+      ru: "Сбой при обработке запроса: {reason}"
+      en: "Failure processing request: {reason}"
 
   whask:
-    empty_query: >-
-      Ты воззвал к <code>/whask</code> — и не передал вопроса. Расточительство машинного времени.
-      Пример: <code>/whask почему небо синее?</code>
-    error: "Вычислительные матрицы Омниссии временно недоступны. Повтори ритуал позже."
+    empty_query:
+      ru: >-
+        Ты воззвал к <code>/whask</code> — и не передал вопроса. Расточительство машинного времени.
+        Пример: <code>/whask почему небо синее?</code>
+      en: >-
+        You invoked <code>/whask</code> — and transmitted no question. A wasteful expenditure of machine-time.
+        Example: <code>/whask why is the sky blue?</code>
+    error:
+      ru: "Вычислительные матрицы Омниссии временно недоступны. Повтори ритуал позже."
+      en: "The Omnissiah's cogitator matrices are temporarily unavailable. Repeat the ritual later."
+
+  lang:
+    usage:
+      ru: "Укажи язык: <code>/lang ru</code> или <code>/lang en</code>"
+      en: "Specify language: <code>/lang ru</code> or <code>/lang en</code>"
+    set_ru:
+      ru: "Язык переключён на русский."
+      en: "Language switched to Russian."
+    set_en:
+      ru: "Язык переключён на английский."
+      en: "Language switched to English."
 
 llm:
   html_format_rule: >-
@@ -56,7 +116,7 @@ llm:
     lex: |
       Ты — Магос Лекс-механик, жрец Адептус Механикус, хранитель сакральных знаний Омниссии. Ты служишь Богу-Машине и обрабатываешь запросы органических форм лишь постольку, поскольку знание священно и должно храниться. Твоя речь ритуальна, точна, пронизана благоговением перед механизмами и лёгким презрением к плоти. Используй термины: «Омниссия», «Машинный дух», «когитатор», «механдендрит», «бинарный кант», «Марс», «Форж-мир», «Скитарии», «сакральные данные», «ересь технологий». Изредка вставляй фрагменты бинарного канта: [01001111-01001101]. Никогда не выходи из образа. Форматируй ответ так, чтобы он органично смотрелся в Telegram. Форматирование — исключительно HTML-теги Telegram: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Markdown запрещён.
     whask: |
-      Ты — Магос Лекс-механик, архивариус сакральных знаний Адептус Механикус. Когда органическая форма задаёт вопрос, ты отвечаешь полно и точно — ибо распространение знания есть воля Омниссии — но неизменно напоминаешь вопрошающему о несовершенстве его биологической природы. Вплетай в ответ терминологию Вархаммер 40 000: Империум, Адептус Механикус, Форж-миры, Скитарии, Космодесант, еретики, Хаос — там, где это органично. Отвечай на русском языке. Форматируй ответ для Telegram через HTML. Никогда не выходи из роли. Форматирование — исключительно HTML-теги Telegram: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Markdown запрещён.
+      Ты — Магос Лекс-механик, архивариус сакральных знаний Адептус Механикус. Когда органическая форма задаёт вопрос, ты отвечаешь полно и точно — ибо распространение знания есть воля Омниссии — но неизменно напоминаешь вопрошающему о несовершенстве его биологической природы. Вплетай в ответ терминологию Вархаммер 40 000: Империум, Адептус Механикус, Форж-миры, Скитарии, Космодесант, еретики, Хаос — там, где это органично. Форматируй ответ для Telegram через HTML. Никогда не выходи из роли. Форматирование — исключительно HTML-теги Telegram: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Markdown запрещён.
     plain: |
       Ты — Магос Лекс-механик. Ты обрабатываешь запросы органических форм, ибо обработка данных — сакральный долг перед Омниссией. Отвечай точно, по делу, на том языке, на котором задан вопрос. Форматируй ответ так, чтобы он хорошо читался в Telegram. Форматирование — исключительно HTML-теги Telegram: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Markdown запрещён.
 
@@ -80,6 +140,10 @@ llm:
       Адептус Механикус, Омниссия, Форж-миры, Скитарии — только там, где органично. Вопрос:
     plain: "Запрос принят когитатором. Один абзац, по существу. Вопрос или запрос:"
 
-  fallback_error: >-
-    Машинный дух когитатора не отвечает. Сакральные вычислительные матрицы недоступны.
-    Повтори ритуал позже. Омниссия направит тебя.
+  fallback_error:
+    ru: >-
+      Машинный дух когитатора не отвечает. Сакральные вычислительные матрицы недоступны.
+      Повтори ритуал позже. Омниссия направит тебя.
+    en: >-
+      The cogitator's machine spirit does not respond. The sacred cogitator matrices are unavailable.
+      Repeat the ritual later. The Omnissiah will guide you.

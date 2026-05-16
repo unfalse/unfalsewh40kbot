@@ -1,13 +1,16 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
+import type { PreferencesService } from "../services/preferences.service";
 import { UrlUtil } from "../util/url";
-import { messages } from "../config/messages";
+import { messages, t } from "../config/messages";
 
 export class PrivateChatHandler {
   private readonly llm: LlmService;
+  private readonly prefs: PreferencesService;
 
-  constructor(deps: { llm: LlmService }) {
+  constructor(deps: { llm: LlmService; prefs: PreferencesService }) {
     this.llm = deps.llm;
+    this.prefs = deps.prefs;
   }
 
   async handle(ctx: Context): Promise<void> {
@@ -24,16 +27,17 @@ export class PrivateChatHandler {
     if (urls.length > 0 || UrlUtil.extractFirstHttpUrl(text)) return;
 
     const messageId = ctx.message?.message_id;
+    const lang = this.prefs.getLanguage(ctx.from?.id ?? 0);
 
     try {
       await ctx.replyWithChatAction("typing");
-      const result = await this.llm.wrapInPersona(text, "whask");
+      const result = await this.llm.wrapInPersona(text, "whask", lang);
       await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[PrivateChatHandler] error:", reason);
       await ctx.reply(
-        messages.handlers.whask.error,
+        t(messages.handlers.whask.error, lang),
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }

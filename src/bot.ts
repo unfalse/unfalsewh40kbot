@@ -5,6 +5,7 @@ import { HandlerRegistry } from "./handlers/index";
 import { GeminiLlmService } from "./services/llm.service";
 import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
+import { PreferencesService } from "./services/preferences.service";
 import { messages } from "./config/messages";
 
 const HTTP_PORT = Number(process.env["HTTP_PORT"] ?? 3000);
@@ -39,7 +40,8 @@ export class VoxLogisBot {
     const weather = new OpenWeatherService(openWeatherKey);
     const parser = new HttpParserService();
 
-    new HandlerRegistry({ llm, weather, parser }).register(bot);
+    const prefs = new PreferencesService();
+    new HandlerRegistry({ llm, weather, parser, prefs }).register(bot);
 
     bot.catch(async (err) => {
       const cause = err.error;

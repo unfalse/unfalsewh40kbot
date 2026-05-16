@@ -3,6 +3,7 @@ import type { Context } from "grammy";
 import type { LlmService, PersonaContext } from "../../src/services/llm.service";
 import type { WeatherService, CurrentWeatherFacts } from "../../src/services/weather.service";
 import type { ParserService, ParsedPage } from "../../src/services/parser.service";
+import type { PreferencesService, Language } from "../../src/services/preferences.service";
 
 type MessageOverrides = {
   text?: string;
@@ -52,6 +53,13 @@ export function makeMockWeather(
   return {
     getCurrentByCity: vi.fn<(city: string) => Promise<CurrentWeatherFacts>>().mockResolvedValue(facts),
     formatFactsForLlm: vi.fn<(facts: CurrentWeatherFacts) => string>().mockReturnValue("TestCity: 20°C, clear sky"),
+  };
+}
+
+export function makeMockPrefs(language: Language = "ru"): PreferencesService {
+  return {
+    getLanguage: vi.fn<(userId: number) => Language>().mockReturnValue(language),
+    setLanguage: vi.fn<(userId: number, lang: Language) => void>(),
   };
 }
 

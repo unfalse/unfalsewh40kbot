@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MentionHandler } from "../../src/handlers/mention.handler";
-import { makeFakeCtx, makeMockLlm } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("MentionHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: MentionHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
-    handler = new MentionHandler({ llm });
+    prefs = makeMockPrefs();
+    handler = new MentionHandler({ llm, prefs });
   });
 
   it("happy path — strips mention, calls LLM with chat context, replies with result and reply_parameters", async () => {
@@ -19,7 +21,7 @@ describe("MentionHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Nurgle", "chat");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Nurgle", "chat", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "nurgle info",
       expect.objectContaining({ reply_parameters: { message_id: 7 }, parse_mode: "HTML" }),
@@ -63,7 +65,7 @@ describe("MentionHandler", () => {
     expect(llm.wrapInPersona).not.toHaveBeenCalled();
     expect(ctx.reply).toHaveBeenCalledOnce();
     const [replyText, replyOptions] = vi.mocked(ctx.reply).mock.calls[0] as [string, unknown];
-    expect(replyText).toContain("Соединение установлено");
+    expect(replyText).toContain("Канал связи открыт");
     expect(replyOptions).toEqual(
       expect.objectContaining({ reply_parameters: { message_id: 3 }, parse_mode: "HTML" }),
     );
@@ -75,7 +77,7 @@ describe("MentionHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello", "chat");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello", "chat", "ru");
   });
 
   it("mid-text mention — strips @botname from middle of sentence, LLM receives cleaned text", async () => {
@@ -84,7 +86,7 @@ describe("MentionHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello how are you", "chat");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello how are you", "chat", "ru");
   });
 
   it("LLM throws — retries with error persona, replies with error result, does not rethrow", async () => {
@@ -98,11 +100,12 @@ describe("MentionHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledTimes(2);
-    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "tell me something", "chat");
+    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "tell me something", "chat", "ru");
     expect(llm.wrapInPersona).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("quota_exceeded"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledWith(
       "error text",
