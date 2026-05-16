@@ -10,7 +10,7 @@ export interface LlmService {
 }
 
 const LANG_INSTRUCTION: Record<Language, string> = {
-  ru: "",
+  ru: "\nОтвечай исключительно на русском языке, независимо от языка вопроса.",
   en: "\nYou must respond in English only, regardless of the language of the question or instructions.",
 };
 
