@@ -31,7 +31,11 @@ interface Messages {
   };
 }
 
-const raw = readFileSync(join(__dirname, "messages.yaml"), "utf-8");
+const messagesPath = process.env["MESSAGES"]
+  ? join(process.cwd(), process.env["MESSAGES"])
+  : join(__dirname, "shodan.yaml");
+
+const raw = readFileSync(messagesPath, "utf-8");
 export const messages = yaml.load(raw) as Messages;
 
 export function fmt(template: string, values: Record<string, string>): string {

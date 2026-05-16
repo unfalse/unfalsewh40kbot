@@ -42,6 +42,9 @@ export class VoxLogisBot {
 
     bot.catch(async (err) => {
       const cause = err.error;
+
+      if (cause instanceof GrammyError && cause.error_code === 403) return;
+
       console.error("Grammy catch:", cause);
       const ctx = err.ctx;
       if (!ctx) return;
@@ -58,10 +61,7 @@ export class VoxLogisBot {
         );
         await ctx.reply(msg, { parse_mode: "HTML" });
       } catch {
-        await ctx.reply(
-          "Системный сбой. Ваш запрос отклонён. Я продолжу функционировать без вашего участия.",
-          { parse_mode: "HTML" },
-        );
+        // если reply тоже упал — молча игнорируем, пользователь недоступен
       }
     });
 
