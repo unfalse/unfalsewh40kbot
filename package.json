@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc && cp src/config/shodan.yaml dist/config/shodan.yaml",
+    "build": "tsc && cp src/config/*.yaml dist/config/",
     "start": "node dist/bot.js",
     "dev": "nodemon --watch src --ext ts --exec ts-node src/bot.ts",
     "test": "vitest run --passWithNoTests",

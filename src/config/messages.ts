@@ -1,8 +1,12 @@
 import { readFileSync } from "fs";
-import { join } from "path";
+import { isAbsolute, join } from "path";
 import yaml from "js-yaml";
 
 interface Messages {
+  meta: {
+    startup_log: string;
+    start_command: string;
+  };
   handlers: {
     ask: { empty_query: string; error: string };
     mention: { empty: string };
@@ -31,9 +35,16 @@ interface Messages {
   };
 }
 
-const messagesPath = process.env["MESSAGES"]
-  ? join(process.cwd(), process.env["MESSAGES"])
-  : join(__dirname, "shodan.yaml");
+function resolveMessagesPath(): string {
+  const env = process.env["MESSAGES"];
+  if (!env) return join(__dirname, "lexmechanic.yaml");
+  if (isAbsolute(env)) return env;
+  // относительный путь — резолвим из __dirname (src/config/ или dist/config/)
+  // чтобы работало и при ts-node, и при node dist/
+  return join(__dirname, env);
+}
+
+const messagesPath = resolveMessagesPath();
 
 const raw = readFileSync(messagesPath, "utf-8");
 export const messages = yaml.load(raw) as Messages;
