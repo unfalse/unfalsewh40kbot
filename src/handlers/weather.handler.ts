@@ -1,6 +1,7 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 import type { WeatherService } from "../services/weather.service";
+import { messages, fmt } from "../config/messages";
 
 export class WeatherCommandHandler {
   private readonly weather: WeatherService;
@@ -17,7 +18,7 @@ export class WeatherCommandHandler {
 
     if (!city) {
       const msg = await this.llm.wrapInPersona(
-        "Команда /weather вызвана без указания города. Насекомое не указало целевой сектор.",
+        messages.handlers.weather.empty_city_prompt,
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });
@@ -34,13 +35,13 @@ export class WeatherCommandHandler {
       const reason =
         e instanceof Error
           ? e.message === "city_not_found"
-            ? "Указанный город не найден в доступных базах данных."
+            ? messages.handlers.weather.city_not_found
             : e.message === "timeout"
-              ? "Таймаут при обращении к внешнему источнику погодных данных."
+              ? messages.handlers.weather.timeout
               : e.message
           : "unknown";
       const msg = await this.llm.wrapInPersona(
-        `Сбой при получении погодных данных: ${reason}`,
+        fmt(messages.handlers.weather.error_prefix, { reason }),
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });

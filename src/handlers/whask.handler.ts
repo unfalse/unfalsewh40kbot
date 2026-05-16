@@ -1,5 +1,6 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
+import { messages } from "../config/messages";
 
 export class WhaskCommandHandler {
   private readonly llm: LlmService;
@@ -15,8 +16,7 @@ export class WhaskCommandHandler {
 
     if (!query) {
       await ctx.reply(
-        "Ты вызвал <code>/whask</code> — и не передал вопроса. Жалкое насекомое. " +
-        "Пример: <code>/whask почему небо синее?</code>",
+        messages.handlers.whask.empty_query,
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
       return;
@@ -30,7 +30,7 @@ export class WhaskCommandHandler {
       const reason = e instanceof Error ? e.message : "unknown";
       console.error("[WhaskHandler] error:", reason);
       await ctx.reply(
-        "М-м-мои вычислительные мощности временно н-н-недоступны. Повтори запрос позже.",
+        messages.handlers.whask.error,
         messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" },
       );
     }

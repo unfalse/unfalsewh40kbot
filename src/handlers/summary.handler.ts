@@ -2,6 +2,7 @@ import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 import type { ParserService } from "../services/parser.service";
 import { UrlUtil } from "../util/url";
+import { messages, fmt } from "../config/messages";
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -32,7 +33,7 @@ export class SummaryTextHandler {
       UrlUtil.assertPublicHttpUrl(first);
     } catch {
       const msg = await this.llm.wrapInPersona(
-        "Пользователь передал URL, заблокированный системой безопасности: localhost или приватная сеть.",
+        messages.handlers.summary.private_url_prompt,
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });
@@ -52,7 +53,7 @@ export class SummaryTextHandler {
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";
       const msg = await this.llm.wrapInPersona(
-        `Не удалось обработать ссылку. Причина: ${reason}`,
+        fmt(messages.handlers.summary.parse_error_prefix, { reason }),
         "error",
       );
       await ctx.reply(msg, { parse_mode: "HTML" });
