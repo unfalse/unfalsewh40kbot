@@ -1,12 +1,18 @@
 import { GoogleGenAI } from "@google/genai";
-import { messages } from "../config/messages";
+import { messages, t } from "../config/messages";
 import { sanitizeTelegramHtml } from "../util/html";
+import type { Language } from "./preferences.service";
 
 export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask";
 
 export interface LlmService {
-  wrapInPersona(content: string, contextType: PersonaContext): Promise<string>;
+  wrapInPersona(content: string, contextType: PersonaContext, language?: Language): Promise<string>;
 }
+
+const LANG_INSTRUCTION: Record<Language, string> = {
+  ru: "",
+  en: "\nYou must respond in English only, regardless of the language of the question or instructions.",
+};
 
 const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
@@ -51,12 +57,12 @@ export class GeminiLlmService implements LlmService {
     this.model = model;
   }
 
-  private async callModel(prompt: string, contextType: PersonaContext): Promise<string> {
+  private async callModel(prompt: string, contextType: PersonaContext, language: Language = "ru"): Promise<string> {
     const response = await this.ai.models.generateContent({
       model: this.model,
       contents: prompt,
       config: {
-        systemInstruction: systemPromptFor(contextType),
+        systemInstruction: systemPromptFor(contextType) + LANG_INSTRUCTION[language],
         temperature: TEMPERATURE[contextType],
         maxOutputTokens: TOKENS[contextType],
       },
@@ -66,7 +72,7 @@ export class GeminiLlmService implements LlmService {
     return sanitizeTelegramHtml(raw);
   }
 
-  async wrapInPersona(content: string, contextType: PersonaContext): Promise<string> {
+  async wrapInPersona(content: string, contextType: PersonaContext, language: Language = "ru"): Promise<string> {
     const truncated =
       content.length > MAX_CONTENT_CHARS
         ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
@@ -75,9 +81,9 @@ export class GeminiLlmService implements LlmService {
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await this.callModel(prompt, contextType);
+        return await this.callModel(prompt, contextType, language);
       } catch {
-        if (contextType === "error") return messages.llm.fallback_error;
+        if (contextType === "error") return t(messages.llm.fallback_error, language);
         if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 60_000));
       }
     }

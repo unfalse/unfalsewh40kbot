@@ -1,25 +1,25 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
-import { messages } from "../config/messages";
+import type { PreferencesService } from "../services/preferences.service";
+import { messages, t } from "../config/messages";
 
 export class MentionHandler {
   private readonly llm: LlmService;
+  private readonly prefs: PreferencesService;
 
-  constructor(deps: { llm: LlmService }) {
+  constructor(deps: { llm: LlmService; prefs: PreferencesService }) {
     this.llm = deps.llm;
+    this.prefs = deps.prefs;
   }
 
   async handle(ctx: Context): Promise<void> {
     const text = ctx.message?.text;
-
     if (!text) return;
 
     const me = ctx.me;
     if (!me?.username) return;
 
-    if (!text.toLowerCase().includes("@" + me.username.toLowerCase())) {
-      return;
-    }
+    if (!text.toLowerCase().includes("@" + me.username.toLowerCase())) return;
 
     const escaped = me.username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const stripped = text
@@ -28,9 +28,10 @@ export class MentionHandler {
       .trim();
 
     const messageId = ctx.message!.message_id;
+    const lang = this.prefs.getLanguage(ctx.from?.id ?? 0);
 
     if (!stripped) {
-      await ctx.reply(messages.handlers.mention.empty, {
+      await ctx.reply(t(messages.handlers.mention.empty, lang), {
         reply_parameters: { message_id: messageId },
         parse_mode: "HTML",
       });
@@ -39,7 +40,7 @@ export class MentionHandler {
 
     try {
       await ctx.replyWithChatAction("typing");
-      const result = await this.llm.wrapInPersona(stripped, "chat");
+      const result = await this.llm.wrapInPersona(stripped, "chat", lang);
       await ctx.reply(result, {
         reply_parameters: { message_id: messageId },
         parse_mode: "HTML",
@@ -50,6 +51,7 @@ export class MentionHandler {
       const errMsg = await this.llm.wrapInPersona(
         `Сбой при обработке обращения: ${reason}`,
         "error",
+        lang,
       );
       await ctx.reply(errMsg, {
         reply_parameters: { message_id: messageId },

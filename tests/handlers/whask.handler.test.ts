@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { WhaskCommandHandler } from "../../src/handlers/whask.handler";
-import { makeFakeCtx, makeMockLlm } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("WhaskCommandHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: WhaskCommandHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
-    handler = new WhaskCommandHandler({ llm });
+    prefs = makeMockPrefs();
+    handler = new WhaskCommandHandler({ llm, prefs });
   });
 
   it("happy path — calls LLM with trimmed query and replies with result", async () => {
@@ -19,7 +21,7 @@ describe("WhaskCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("scan the area", "whask");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("scan the area", "whask", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "SHODAN response",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -43,7 +45,7 @@ describe("WhaskCommandHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("system status", "whask");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("system status", "whask", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ parse_mode: "HTML" }),

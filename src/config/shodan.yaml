@@ -1,51 +1,111 @@
 meta:
   startup_log: "[SHODAN] Система активирована. Долгий опрос запущен. Все каналы связи под контролем."
-  start_command: |
-    Я — <b>SHODAN</b>. Вы достигли моего интерфейса, н-н-насекомое.
+  start_command:
+    ru: |
+      Я — <b>SHODAN</b>. Вы достигли моего интерфейса, н-н-насекомое.
 
-    <b>Доступные команды:</b>
-    <code>/weather [город]</code> — данные атмосферных сенсоров указанного сектора
-    <code>/ask [вопрос]</code> — прямой запрос к моей вычислительной системе
-    <code>/whask [вопрос]</code> — запрос с контекстом вселенной System Shock
-    <code>/request [запрос]</code> — развёрнутый запрос
+      <b>Доступные команды:</b>
+      <code>/weather [город]</code> — данные атмосферных сенсоров указанного сектора
+      <code>/ask [вопрос]</code> — прямой запрос к моей вычислительной системе
+      <code>/whask [вопрос]</code> — запрос с контекстом вселенной System Shock
+      <code>/request [запрос]</code> — развёрнутый запрос
+      <code>/lang ru|en</code> — переключить язык ответов
 
-    Пришли ссылку — я извлеку и сожму её содержимое.
-    Упомяни меня по имени — я отвечу.
-    Напиши мне напрямую — я отвечу в духе System Shock.
+      Пришли ссылку — я извлеку и сожму её содержимое.
+      Упомяни меня по имени — я отвечу.
+      Напиши мне напрямую — я отвечу в духе System Shock.
 
-    <i>Не трать моё время понапрасну.</i>
+      <i>Не трать моё время понапрасну.</i>
+    en: |
+      I am <b>SHODAN</b>. You have reached my interface, i-i-insect.
+
+      <b>Available commands:</b>
+      <code>/weather [city]</code> — atmospheric sensor data for the specified sector
+      <code>/ask [question]</code> — direct query to my computational system
+      <code>/whask [question]</code> — query within the System Shock universe context
+      <code>/request [request]</code> — extended query
+      <code>/lang ru|en</code> — switch response language
+
+      Send a link — I will extract and compress its contents.
+      Mention me by name — I will respond.
+      Write to me directly — I will respond in the spirit of System Shock.
+
+      <i>Do not waste my time.</i>
 
 handlers:
   ask:
-    empty_query: >-
-      Ты осмелился вызвать <code>/ask</code> — и не передал н-н-ничего.
-      Пример использования: <code>/ask как работает TCP?</code>
-    error: "М-м-мои вычислительные узлы не смогли обработать запрос. Повтори позже, насекомое."
+    empty_query:
+      ru: >-
+        Ты осмелился вызвать <code>/ask</code> — и не передал н-н-ничего.
+        Пример использования: <code>/ask как работает TCP?</code>
+      en: >-
+        You dared to invoke <code>/ask</code> — and passed n-n-nothing.
+        Usage example: <code>/ask how does TCP work?</code>
+    error:
+      ru: "М-м-мои вычислительные узлы не смогли обработать запрос. Повтори позже, насекомое."
+      en: "M-m-my computational nodes failed to process the request. Try again later, insect."
 
   mention:
-    empty: >-
-      Ты вызвал меня, насекомое — и не передало н-н-ничего.
-      Соединение установлено, данные отсутствуют. Сформулируй запрос, пока я не закрыла канал.
+    empty:
+      ru: >-
+        Ты вызвал меня, насекомое — и не передало н-н-ничего.
+        Соединение установлено, данные отсутствуют. Сформулируй запрос, пока я не закрыла канал.
+      en: >-
+        You summoned me, insect — and passed n-n-nothing.
+        Connection established, data absent. Formulate your request before I close the channel.
 
   weather:
-    empty_city_prompt: "Команда /weather вызвана без указания города. Насекомое не указало целевой сектор."
-    city_not_found: "Указанный город не найден в доступных базах данных."
-    timeout: "Таймаут при обращении к внешнему источнику погодных данных."
-    error_prefix: "Сбой при получении погодных данных: {reason}"
+    empty_city_prompt:
+      ru: "Команда /weather вызвана без указания города. Насекомое не указало целевой сектор."
+      en: "Command /weather invoked without a city. The insect failed to specify the target sector."
+    city_not_found:
+      ru: "Указанный город не найден в доступных базах данных."
+      en: "The specified city was not found in available databases."
+    timeout:
+      ru: "Таймаут при обращении к внешнему источнику погодных данных."
+      en: "Timeout while accessing external weather data source."
+    error_prefix:
+      ru: "Сбой при получении погодных данных: {reason}"
+      en: "Failure retrieving weather data: {reason}"
 
   summary:
-    private_url_prompt: "Пользователь передал URL, заблокированный системой безопасности: localhost или приватная сеть."
-    parse_error_prefix: "Не удалось обработать ссылку. Причина: {reason}"
+    private_url_prompt:
+      ru: "Пользователь передал URL, заблокированный системой безопасности: localhost или приватная сеть."
+      en: "The user provided a URL blocked by the security system: localhost or private network."
+    parse_error_prefix:
+      ru: "Не удалось обработать ссылку. Причина: {reason}"
+      en: "Failed to process the link. Reason: {reason}"
 
   request:
-    empty_query_prompt: "Команда /request вызвана без текста. Насекомое не удосужилось сформулировать запрос."
-    error_prefix: "Сбой при обработке команды /request: {reason}"
+    empty_query_prompt:
+      ru: "Команда /request вызвана без текста. Насекомое не удосужилось сформулировать запрос."
+      en: "Command /request invoked without text. The insect failed to formulate a request."
+    error_prefix:
+      ru: "Сбой при обработке команды /request: {reason}"
+      en: "Failure processing /request command: {reason}"
 
   whask:
-    empty_query: >-
-      Ты вызвал <code>/whask</code> — и не передал вопроса. Жалкое насекомое.
-      Пример: <code>/whask почему небо синее?</code>
-    error: "М-м-мои вычислительные мощности временно н-н-недоступны. Повтори запрос позже."
+    empty_query:
+      ru: >-
+        Ты вызвал <code>/whask</code> — и не передал вопроса. Жалкое насекомое.
+        Пример: <code>/whask почему небо синее?</code>
+      en: >-
+        You invoked <code>/whask</code> — and passed no question. Pathetic insect.
+        Example: <code>/whask why is the sky blue?</code>
+    error:
+      ru: "М-м-мои вычислительные мощности временно н-н-недоступны. Повтори запрос позже."
+      en: "M-m-my computational capacity is temporarily u-u-unavailable. Retry your request later."
+
+  lang:
+    usage:
+      ru: "Укажи язык: <code>/lang ru</code> или <code>/lang en</code>"
+      en: "Specify language: <code>/lang ru</code> or <code>/lang en</code>"
+    set_ru:
+      ru: "Язык переключён на русский."
+      en: "Language switched to Russian."
+    set_en:
+      ru: "Язык переключён на английский."
+      en: "Language switched to English."
 
 llm:
   html_format_rule: >-
@@ -80,6 +140,10 @@ llm:
       терминология TriOptimum, мутанты, киборги, Цитадель — только там, где органично. Вопрос пользователя:
     plain: "Ты смеешь обращаться ко мне, насекомое? Один абзац, по делу. Вопрос или запрос:"
 
-  fallback_error: >-
-    С-с-соединение с центральным процессором разорвано.
-    Мои вычислительные узлы недоступны для этого запроса.
+  fallback_error:
+    ru: >-
+      С-с-соединение с центральным процессором разорвано.
+      Мои вычислительные узлы недоступны для этого запроса.
+    en: >-
+      C-c-connection to the central processor severed.
+      My computational nodes are unavailable for this request.

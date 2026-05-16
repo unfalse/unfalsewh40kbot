@@ -1,14 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RequestCommandHandler } from "../../src/handlers/request.handler";
-import { makeFakeCtx, makeMockLlm } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("RequestCommandHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
+  let prefs: ReturnType<typeof makeMockPrefs>;
   let handler: RequestCommandHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
-    handler = new RequestCommandHandler({ llm });
+    prefs = makeMockPrefs();
+    handler = new RequestCommandHandler({ llm, prefs });
   });
 
   it("happy path — calls LLM with trimmed query and replies with result", async () => {
@@ -19,7 +21,7 @@ describe("RequestCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "chat");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "chat", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "answer",
       expect.objectContaining({ parse_mode: "HTML", reply_parameters: { message_id: 1 } }),
@@ -36,6 +38,7 @@ describe("RequestCommandHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("без текста"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledWith(
       "error reply",
@@ -49,7 +52,7 @@ describe("RequestCommandHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("how does this work", "chat");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("how does this work", "chat", "ru");
   });
 
   it("LLM primary throws, error-persona retry succeeds — reply called with fallback text", async () => {
@@ -62,8 +65,8 @@ describe("RequestCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledTimes(2);
-    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "what is chaos", "chat");
-    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(2, expect.stringContaining("quota_exceeded"), "error");
+    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "what is chaos", "chat", "ru");
+    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(2, expect.stringContaining("quota_exceeded"), "error", "ru");
     expect(ctx.reply).toHaveBeenCalledWith(
       "fallback text",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -80,6 +83,7 @@ describe("RequestCommandHandler", () => {
     expect(llm.wrapInPersona).toHaveBeenCalledWith(
       expect.stringContaining("без текста"),
       "error",
+      "ru",
     );
     expect(ctx.reply).toHaveBeenCalledOnce();
   });
