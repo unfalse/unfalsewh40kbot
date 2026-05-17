@@ -33,8 +33,9 @@ export class OllamaLlmService implements LlmService {
     const systemPart = systemPromptFor(contextType) + LANG_INSTRUCTION[language];
     const instruction = userInstructionFor(contextType);
     const userContent = `${systemPart}\n\n${instruction}\n\n---\n${content}`;
-
-    const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+    const url = `${this.baseUrl}/v1/chat/completions`
+    console.log({ url });
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -68,7 +69,9 @@ export class OllamaLlmService implements LlmService {
 
     try {
       return await this.callModel(truncated, contextType, language);
-    } catch {
+    } catch (err) {
+      console.log({ err });
+      console.log({ err: JSON.stringify(err) });
       if (contextType === "error") return t(messages.llm.fallback_error, language);
       throw new Error("llm_unavailable");
     }
