@@ -3,6 +3,8 @@ import { createServer } from "node:http";
 import { Bot, GrammyError, HttpError } from "grammy";
 import { HandlerRegistry } from "./handlers/index";
 import { GeminiLlmService } from "./services/llm.service";
+import { OllamaLlmService } from "./services/ollama.service";
+import type { LlmService } from "./services/llm.service";
 import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
 import { PreferencesService } from "./services/preferences.service";
@@ -30,13 +32,23 @@ export class VoxLogisBot {
     });
   }
 
+  private static createLlm(): LlmService {
+    const backend = process.env["LLM"]?.trim() ?? "gemini";
+    if (backend === "localhost:11434") {
+      console.error("[LLM] Используется локальный бэкенд Ollama: http://localhost:11434");
+      return new OllamaLlmService("http://localhost:11434");
+    }
+    const geminiKey = VoxLogisBot.requireEnv("GEMINI_API_KEY");
+    console.error("[LLM] Используется Gemini API");
+    return new GeminiLlmService(geminiKey);
+  }
+
   async start(): Promise<void> {
     const token = VoxLogisBot.requireEnv("TELEGRAM_BOT_TOKEN");
     const openWeatherKey = VoxLogisBot.requireEnv("OPENWEATHER_API_KEY");
-    const geminiKey = VoxLogisBot.requireEnv("GEMINI_API_KEY");
 
     const bot = new Bot(token);
-    const llm = new GeminiLlmService(geminiKey);
+    const llm = VoxLogisBot.createLlm();
     const weather = new OpenWeatherService(openWeatherKey);
     const parser = new HttpParserService();
 
