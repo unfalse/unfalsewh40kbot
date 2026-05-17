@@ -35,8 +35,8 @@ export class VoxLogisBot {
   private static createLlm(): LlmService {
     const backend = process.env["LLM"]?.trim() ?? "gemini";
     if (backend === "http://host.docker.internal:11434") {
-      console.error("[LLM] Используется локальный бэкенд Ollama: http://localhost:11434");
-      return new OllamaLlmService("http://localhost:11434");
+      console.error("[LLM] Используется локальный бэкенд Ollama: http://host.docker.internal:11434");
+      return new OllamaLlmService("http://host.docker.internal:11434");
     }
     const geminiKey = VoxLogisBot.requireEnv("GEMINI_API_KEY");
     console.error("[LLM] Используется Gemini API");
