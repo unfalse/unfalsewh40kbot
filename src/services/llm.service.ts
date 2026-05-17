@@ -9,14 +9,14 @@ export interface LlmService {
   wrapInPersona(content: string, contextType: PersonaContext, language?: Language): Promise<string>;
 }
 
-const LANG_INSTRUCTION: Record<Language, string> = {
+export const LANG_INSTRUCTION: Record<Language, string> = {
   ru: "\nОтвечай исключительно на русском языке, независимо от языка вопроса.",
   en: "\nYou must respond in English only, regardless of the language of the question or instructions.",
 };
 
 const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
-const MAX_CONTENT_CHARS = 28_000;
+export const MAX_CONTENT_CHARS = 28_000;
 
 const TOKENS: Record<PersonaContext, number> = {
   weather: 300,
@@ -36,7 +36,7 @@ const TEMPERATURE: Record<PersonaContext, number> = {
   whask: 0.65,
 };
 
-function systemPromptFor(contextType: PersonaContext): string {
+export function systemPromptFor(contextType: PersonaContext): string {
   switch (contextType) {
     case "plain": return messages.llm.systems.plain;
     case "whask": return messages.llm.systems.whask;
@@ -44,7 +44,7 @@ function systemPromptFor(contextType: PersonaContext): string {
   }
 }
 
-function userInstructionFor(contextType: PersonaContext): string {
+export function userInstructionFor(contextType: PersonaContext): string {
   return messages.llm.instructions[contextType];
 }
 
