@@ -1,6 +1,7 @@
 ﻿import "dotenv/config";
 import { createServer } from "node:http";
 import { Bot, GrammyError, HttpError } from "grammy";
+import { Agent, setGlobalDispatcher } from 'undici';
 import { HandlerRegistry } from "./handlers/index";
 import { GeminiLlmService } from "./services/llm.service";
 import { OllamaLlmService } from "./services/ollama.service";
@@ -9,6 +10,12 @@ import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
 import { PreferencesService } from "./services/preferences.service";
 import { messages } from "./config/messages";
+
+// Устанавливаем лимит ожидания в 10 минут (600 000 мс)
+setGlobalDispatcher(new Agent({
+  headersTimeout: 600000,
+  bodyTimeout: 600000
+}));
 
 const HTTP_PORT = Number(process.env["HTTP_PORT"] ?? 3000);
 
