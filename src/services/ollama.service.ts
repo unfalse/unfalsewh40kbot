@@ -43,6 +43,9 @@ export class OllamaLlmService implements LlmService {
       }),
     });
 
+    console.log({ response });
+    console.log({ response: JSON.stringify(response) });
+
     if (!response.ok) {
       throw new Error(`ollama_http_${response.status}`);
     }
