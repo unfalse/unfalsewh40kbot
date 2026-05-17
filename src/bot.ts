@@ -34,7 +34,7 @@ export class VoxLogisBot {
 
   private static createLlm(): LlmService {
     const backend = process.env["LLM"]?.trim() ?? "gemini";
-    if (backend === "localhost:11434") {
+    if (backend === "http://host.docker.internal:11434") {
       console.error("[LLM] Используется локальный бэкенд Ollama: http://localhost:11434");
       return new OllamaLlmService("http://localhost:11434");
     }
