@@ -8,7 +8,7 @@ services:
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - MESSAGES=${MESSAGES:-lexmechanic.yaml}
-      - LLM=${LLM:gemini}
+      - LLM=${LLM:-gemini}
       - DATA_DIR=/app/data
     volumes:
       - bot-data:/app/data
