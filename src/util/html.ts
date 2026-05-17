@@ -1,6 +1,6 @@
 const BLOCK_TAGS = /\s*<\/?(p|div|section|article|header|footer|h[1-6]|ul|ol|li)(\s[^>]*)?\/?>\s*/gi;
 const BR_TAGS = /\s*<br\s*\/?>\s*/gi;
-const INLINE_STRIP = /<\/?(span|figure|img|table|thead|tbody|tr|td|th|caption)(\s[^>]*)?\/?>/gi;
+const INLINE_STRIP = /<\/?(span|font|figure|img|table|thead|tbody|tr|td|th|caption|mark|small|sub|sup|abbr|cite|q|var|kbd|samp|ruby|rt|rp)(\s[^>]*)?\/?>/gi;
 
 // Markdown code fences: ```lang\n...\n``` — Gemini ignores the "no Markdown" rule sometimes
 const MARKDOWN_FENCE = /```[\w-]*\r?\n?([\s\S]*?)\r?\n?```/g;
@@ -21,7 +21,7 @@ function balanceTags(text: string): string {
   const stack: string[] = [];
   const result = text.replace(/<(\/?)([a-z][\w-]*)([^>]*?)>/gi, (match, slash, tag) => {
     const t = tag.toLowerCase();
-    if (!TELEGRAM_TAGS.has(t)) return match;
+    if (!TELEGRAM_TAGS.has(t)) return ""; // strip any tag not supported by Telegram
     if (!slash) {
       stack.push(t);
       return match;
