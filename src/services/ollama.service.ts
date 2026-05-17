@@ -9,7 +9,7 @@ import {
   userInstructionFor,
 } from "./llm.service";
 
-const OLLAMA_MODEL = "gemma4:e4b";
+const OLLAMA_MODEL = process.env["OLLAMA_MODEL"]?.trim() || "gemma4:e4b";
 
 interface OllamaResponse {
   choices?: Array<{ message?: { content?: string } }>;
