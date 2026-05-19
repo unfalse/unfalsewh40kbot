@@ -1,7 +1,7 @@
 services:
   vox-logis-bot:
     build: .
-    container_name: vox-logis-bot
+    container_name: ${CONTAINER_NAME:-vox-logis-bot}
     restart: unless-stopped
     network_mode: "host"
     environment:
@@ -17,11 +17,12 @@ services:
       - LLM_TOKENS_CHAT=${LLM_TOKENS_CHAT}
       - LLM_TOKENS_PLAIN=${LLM_TOKENS_PLAIN}
       - LLM_TOKENS_WHASK=${LLM_TOKENS_WHASK}
+      - HTTP_PORT=${HTTP_PORT:-3000}
       - DATA_DIR=/app/data
     volumes:
       - bot-data:/app/data
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:${HTTP_PORT:-3000}/"]
       interval: 30s
       timeout: 5s
       start_period: 15s

@@ -13,7 +13,8 @@ RUN npm run build
 # ── Runtime stage ────────────────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    HTTP_PORT=3000
 
 WORKDIR /app
 
@@ -26,9 +27,9 @@ RUN mkdir -p /app/data && chown node:node /app/data
 
 USER node
 
-EXPOSE 3000
+EXPOSE ${HTTP_PORT}
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ || exit 1
+  CMD wget -qO- http://localhost:${HTTP_PORT}/ || exit 1
 
 CMD ["node", "dist/bot.js"]
