@@ -4,6 +4,7 @@ import type { Language } from "./preferences.service";
 import type { LlmService, PersonaContext } from "./llm.service";
 import {
   LANG_INSTRUCTION,
+  LENGTH_INSTRUCTION,
   MAX_CONTENT_CHARS,
   systemPromptFor,
   userInstructionFor,
@@ -27,23 +28,21 @@ export class OllamaLlmService implements LlmService {
     contextType: PersonaContext,
     language: Language,
   ): Promise<string> {
-    // Объединяем системный промпт + языковую инструкцию + инструкцию задачи в одно
-    // пользовательское сообщение, так как API вызывается с ролью "user"
-    const systemPart = systemPromptFor(contextType) + LANG_INSTRUCTION[language];
+    const systemPart = systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION;
     const instruction = userInstructionFor(contextType);
     const userContent = `${systemPart}\n\n${instruction}\n\n---\n${content}`;
-    const url = `${this.baseUrl}/v1/chat/completions`
-    console.log({ url });
-    const response = await fetch(url, {
+
+    const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: this.model,
         messages: [{ role: "user", content: userContent }],
+        // max_tokens не передаём: для thinking-моделей (gemma4) жёсткий лимит
+        // съедает весь бюджет на «думалку» и оставляет пустой content.
+        // Длину ответа контролирует системный промпт («один абзац»).
       }),
     });
-
-    console.log({ response });
 
     if (!response.ok) {
       throw new Error(`ollama_http_${response.status}`);
@@ -68,8 +67,8 @@ export class OllamaLlmService implements LlmService {
     try {
       return await this.callModel(truncated, contextType, language);
     } catch (err) {
-      console.log({ err });
-      console.log({ err: JSON.stringify(err) });
+      const reason = err instanceof Error ? err.message : "unknown";
+      console.error(`[OllamaLlmService] error (${contextType}):`, reason);
       if (contextType === "error") return t(messages.llm.fallback_error, language);
       throw new Error("llm_unavailable");
     }
