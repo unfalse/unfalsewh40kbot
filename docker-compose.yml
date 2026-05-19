@@ -9,8 +9,8 @@ services:
       - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - MESSAGES=${MESSAGES:-lexmechanic.yaml}
-      - LLM=${LLM:-gemini}
-      - OLLAMA_MODEL=${OLLAMA_MODEL:-gemma4:e4b}
+      - LLM=${LLM}
+      - LLM_HOST=${LLM_HOST}
       - DATA_DIR=/app/data
     volumes:
       - bot-data:/app/data

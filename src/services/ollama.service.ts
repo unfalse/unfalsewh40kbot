@@ -9,18 +9,17 @@ import {
   userInstructionFor,
 } from "./llm.service";
 
-const OLLAMA_MODEL = process.env["OLLAMA_MODEL"]?.trim() || "gemma4:e4b";
-
 interface OllamaResponse {
   choices?: Array<{ message?: { content?: string } }>;
 }
 
 export class OllamaLlmService implements LlmService {
   private readonly baseUrl: string;
+  private readonly model: string;
 
-  constructor(baseUrl: string) {
-    // Нормализуем: убираем trailing slash
+  constructor(baseUrl: string, model: string) {
     this.baseUrl = baseUrl.replace(/\/$/, "");
+    this.model = model;
   }
 
   private async callModel(
@@ -39,7 +38,7 @@ export class OllamaLlmService implements LlmService {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: OLLAMA_MODEL,
+        model: this.model,
         messages: [{ role: "user", content: userContent }],
       }),
     });
