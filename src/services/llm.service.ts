@@ -14,17 +14,24 @@ export const LANG_INSTRUCTION: Record<Language, string> = {
   en: "\nYou must respond in English only, regardless of the language of the question or instructions.",
 };
 
+export const LENGTH_INSTRUCTION = "\nМаксимум 40 слов в ответе. Будь предельно краток. / Maximum 40 words in your response. Be extremely concise.";
+
 const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 export const MAX_CONTENT_CHARS = 28_000;
 
-const TOKENS: Record<PersonaContext, number> = {
-  weather: 300,
-  summary: 700,
-  error: 200,
-  chat: 200,
-  plain: 300,
-  whask: 300,
+function envInt(name: string, def: number): number {
+  const v = parseInt(process.env[name] ?? "", 10);
+  return isNaN(v) ? def : v;
+}
+
+export const TOKENS: Record<PersonaContext, number> = {
+  weather: envInt("LLM_TOKENS_WEATHER", 300),
+  summary: envInt("LLM_TOKENS_SUMMARY", 700),
+  error:   envInt("LLM_TOKENS_ERROR",   200),
+  chat:    envInt("LLM_TOKENS_CHAT",    200),
+  plain:   envInt("LLM_TOKENS_PLAIN",   300),
+  whask:   envInt("LLM_TOKENS_WHASK",   300),
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
@@ -62,7 +69,7 @@ export class GeminiLlmService implements LlmService {
       model: this.model,
       contents: prompt,
       config: {
-        systemInstruction: systemPromptFor(contextType) + LANG_INSTRUCTION[language],
+        systemInstruction: systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION,
         temperature: TEMPERATURE[contextType],
         maxOutputTokens: TOKENS[contextType],
       },

@@ -11,6 +11,12 @@ services:
       - MESSAGES=${MESSAGES:-lexmechanic.yaml}
       - LLM=${LLM}
       - LLM_HOST=${LLM_HOST}
+      - LLM_TOKENS_WEATHER=${LLM_TOKENS_WEATHER}
+      - LLM_TOKENS_SUMMARY=${LLM_TOKENS_SUMMARY}
+      - LLM_TOKENS_ERROR=${LLM_TOKENS_ERROR}
+      - LLM_TOKENS_CHAT=${LLM_TOKENS_CHAT}
+      - LLM_TOKENS_PLAIN=${LLM_TOKENS_PLAIN}
+      - LLM_TOKENS_WHASK=${LLM_TOKENS_WHASK}
       - DATA_DIR=/app/data
     volumes:
       - bot-data:/app/data
