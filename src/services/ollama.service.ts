@@ -1,5 +1,6 @@
 import { messages, t } from "../config/messages";
 import { sanitizeTelegramHtml } from "../util/html";
+import { Semaphore } from "../util/semaphore";
 import type { Language } from "./preferences.service";
 import type { LlmService, PersonaContext } from "./llm.service";
 import {
@@ -9,6 +10,10 @@ import {
   systemPromptFor,
   userInstructionFor,
 } from "./llm.service";
+
+const ollamaSemaphore = new Semaphore(
+  parseInt(process.env["LLM_CONCURRENCY"] ?? "", 10) || 1,
+);
 
 interface OllamaResponse {
   choices?: Array<{ message?: { content?: string } }>;
@@ -65,7 +70,7 @@ export class OllamaLlmService implements LlmService {
         : content;
 
     try {
-      return await this.callModel(truncated, contextType, language);
+      return await ollamaSemaphore.run(() => this.callModel(truncated, contextType, language));
     } catch (err) {
       const reason = err instanceof Error ? err.message : "unknown";
       console.error(`[OllamaLlmService] error (${contextType}):`, reason);
