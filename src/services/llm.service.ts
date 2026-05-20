@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { messages, t } from "../config/messages";
 import { sanitizeTelegramHtml } from "../util/html";
+import { Semaphore } from "../util/semaphore";
 import type { Language } from "./preferences.service";
 
 export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask";
@@ -55,6 +56,8 @@ export function userInstructionFor(contextType: PersonaContext): string {
   return messages.llm.instructions[contextType];
 }
 
+const llmSemaphore = new Semaphore(envInt("LLM_CONCURRENCY", 1));
+
 export class GeminiLlmService implements LlmService {
   private readonly ai: GoogleGenAI;
   private readonly model: string;
@@ -88,7 +91,7 @@ export class GeminiLlmService implements LlmService {
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await this.callModel(prompt, contextType, language);
+        return await llmSemaphore.run(() => this.callModel(prompt, contextType, language));
       } catch {
         if (contextType === "error") return t(messages.llm.fallback_error, language);
         if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 60_000));
