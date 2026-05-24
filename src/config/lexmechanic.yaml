@@ -9,6 +9,7 @@ meta:
       <code>/ask [вопрос]</code> — прямой запрос к вычислительным матрицам
       <code>/whask [вопрос]</code> — запрос через призму знаний Империума
       <code>/request [запрос]</code> — развёрнутый запрос
+      <code>/ainews</code> — новости об AI с Hacker News
       <code>/lang ru|en</code> — переключить язык ответов
 
       Пришли ссылку — извлеку и обработаю данные источника.
@@ -24,6 +25,7 @@ meta:
       <code>/ask [question]</code> — direct query to the cogitator matrices
       <code>/whask [question]</code> — query through the lens of Imperial knowledge
       <code>/request [request]</code> — extended query
+      <code>/ainews</code> — AI news from Hacker News
       <code>/lang ru|en</code> — switch response language
 
       Send a link — I will extract and process the data source.
@@ -96,6 +98,14 @@ handlers:
       ru: "Вычислительные матрицы Омниссии временно недоступны. Повтори ритуал позже."
       en: "The Omnissiah's cogitator matrices are temporarily unavailable. Repeat the ritual later."
 
+  ainews:
+    no_results:
+      ru: "Сканирование Hacker News завершено. Сведений об искусственном интеллекте не обнаружено. Попробуй позже."
+      en: "Hacker News scan complete. No artificial intelligence data found. Try again later."
+    error:
+      ru: "Атмосферные помехи затрудняют доступ к внешнему источнику данных. Когитатор неисправен."
+      en: "Atmospheric interference prevents access to external data source. Cogitator malfunction."
+
   lang:
     usage:
       ru: "Укажи язык: <code>/lang ru</code> или <code>/lang en</code>"
@@ -139,6 +149,11 @@ llm:
       Органическая форма задала вопрос. Ответь одним абзацем (3–5 предложений) через призму вселенной Вархаммер 40 000:
       Адептус Механикус, Омниссия, Форж-миры, Скитарии — только там, где органично. Вопрос:
     plain: "Запрос принят когитатором. Один абзац, по существу. Вопрос или запрос:"
+    ainews: >-
+      Ниже — список AI-новостей с Hacker News (заголовок, ссылка, рейтинг).
+      Составь сводку: 3–5 тезисов, каждый с новой строки, символ «•» в начале.
+      Выдели ключевую тенденцию одним предложением в начале (в теге <b>).
+      Без преамбулы. Только HTML-теги Telegram.
 
   fallback_error:
     ru: >-

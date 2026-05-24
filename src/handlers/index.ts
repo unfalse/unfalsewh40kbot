@@ -4,6 +4,7 @@ import type { ParserService } from "../services/parser.service";
 import type { WeatherService } from "../services/weather.service";
 import type { PreferencesService } from "../services/preferences.service";
 import { messages, t } from "../config/messages";
+import { AiNewsCommandHandler } from "./ainews.handler";
 import { AskCommandHandler } from "./ask.handler";
 import { LangCommandHandler } from "./lang.handler";
 import { MentionHandler } from "./mention.handler";
@@ -27,6 +28,7 @@ export class HandlerRegistry {
   private readonly requestHandler: RequestCommandHandler;
   private readonly askHandler: AskCommandHandler;
   private readonly whaskHandler: WhaskCommandHandler;
+  private readonly aiNewsHandler: AiNewsCommandHandler;
   private readonly privateChatHandler: PrivateChatHandler;
   private readonly langHandler: LangCommandHandler;
   private readonly prefs: PreferencesService;
@@ -39,6 +41,7 @@ export class HandlerRegistry {
     this.requestHandler = new RequestCommandHandler(deps);
     this.askHandler = new AskCommandHandler(deps);
     this.whaskHandler = new WhaskCommandHandler(deps);
+    this.aiNewsHandler = new AiNewsCommandHandler(deps);
     this.privateChatHandler = new PrivateChatHandler(deps);
     this.langHandler = new LangCommandHandler(deps);
   }
@@ -53,6 +56,7 @@ export class HandlerRegistry {
     bot.command("request", (ctx) => this.requestHandler.handle(ctx));
     bot.command("ask", (ctx) => this.askHandler.handle(ctx));
     bot.command("whask", (ctx) => this.whaskHandler.handle(ctx));
+    bot.command("ainews", (ctx) => this.aiNewsHandler.handle(ctx));
     bot.command("lang", (ctx) => this.langHandler.handle(ctx));
     bot.on("message:text", async (ctx) => {
       await this.mentionHandler.handle(ctx);

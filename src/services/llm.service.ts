@@ -4,7 +4,7 @@ import { sanitizeTelegramHtml } from "../util/html";
 import { Semaphore } from "../util/semaphore";
 import type { Language } from "./preferences.service";
 
-export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask";
+export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask" | "ainews";
 
 export interface LlmService {
   wrapInPersona(content: string, contextType: PersonaContext, language?: Language): Promise<string>;
@@ -33,6 +33,7 @@ export const TOKENS: Record<PersonaContext, number> = {
   chat:    envInt("LLM_TOKENS_CHAT",    200),
   plain:   envInt("LLM_TOKENS_PLAIN",   300),
   whask:   envInt("LLM_TOKENS_WHASK",   300),
+  ainews:  envInt("LLM_TOKENS_AINEWS",  600),
 };
 
 const TEMPERATURE: Record<PersonaContext, number> = {
@@ -42,13 +43,14 @@ const TEMPERATURE: Record<PersonaContext, number> = {
   chat: 0.9,
   plain: 0.5,
   whask: 0.65,
+  ainews: 0.5,
 };
 
 export function systemPromptFor(contextType: PersonaContext): string {
   switch (contextType) {
     case "plain": return messages.llm.systems.plain;
     case "whask": return messages.llm.systems.whask;
-    default:      return messages.llm.systems.lex;
+    default:      return messages.llm.systems.plain;
   }
 }
 
