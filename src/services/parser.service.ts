@@ -9,8 +9,15 @@ export type ParsedPage = {
   text: string;
 };
 
+export type HnStory = {
+  title: string;
+  url: string;
+  score: number;
+};
+
 export interface ParserService {
   parseUrl(url: string): Promise<ParsedPage>;
+  fetchHnAiNews(): Promise<HnStory[]>;
 }
 
 export class HttpParserService implements ParserService {
@@ -50,5 +57,51 @@ export class HttpParserService implements ParserService {
     const clipped = text.length > MAX_TEXT ? text.slice(0, MAX_TEXT) : text;
 
     return { title, text: clipped };
+  }
+
+  async fetchHnAiNews(): Promise<HnStory[]> {
+    const { data: html } = await this.http.get<string>("https://news.ycombinator.com/", {
+      responseType: "text",
+    });
+    const $ = cheerio.load(html);
+
+    const keywords = [
+      "ai",
+      "llm",
+      "gpt",
+      "claude",
+      "gemini",
+      "mistral",
+      "neural",
+      "model",
+      "openai",
+      "anthropic",
+      "machine learning",
+      "deep learning",
+    ];
+    const keywordRegex = new RegExp(keywords.join("|"), "i");
+
+    const stories: HnStory[] = [];
+    $(".athing").each((_i, el) => {
+      const titleEl = $(el).find(".titleline > a").first();
+      const title = titleEl.text().trim();
+      const url = titleEl.attr("href") || "";
+
+      if (!title || !keywordRegex.test(title)) return;
+
+      // Score находится в следующей строке <tr> в элементе `.score`
+      const scoreEl = $(el).next(".subtext").find(".score").first();
+      const scoreText = scoreEl.text().match(/\d+/)?.[0];
+      const score = scoreText ? parseInt(scoreText, 10) : 0;
+
+      // Абсолютный URL
+      const absoluteUrl = url.startsWith("http")
+        ? url
+        : `https://news.ycombinator.com/${url}`;
+
+      stories.push({ title, url: absoluteUrl, score });
+    });
+
+    return stories.slice(0, 10);
   }
 }

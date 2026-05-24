@@ -22,6 +22,7 @@ interface Messages {
     summary: { private_url_prompt: L10n; parse_error_prefix: L10n };
     request: { empty_query_prompt: L10n; error_prefix: L10n };
     whask: { empty_query: L10n; error: L10n };
+    ainews: { no_results: L10n; error: L10n };
     lang: { usage: L10n; set_ru: L10n; set_en: L10n };
   };
   llm: {
@@ -34,6 +35,7 @@ interface Messages {
       chat: string;
       whask: string;
       plain: string;
+      ainews: string;
     };
     fallback_error: L10n;
   };
