@@ -9,6 +9,7 @@ import { AskCommandHandler } from "./ask.handler";
 import { LangCommandHandler } from "./lang.handler";
 import { MentionHandler } from "./mention.handler";
 import { PrivateChatHandler } from "./private.handler";
+import { ReplyHandler } from "./reply.handler";
 import { WhaskCommandHandler } from "./whask.handler";
 import { RequestCommandHandler } from "./request.handler";
 import { SummaryTextHandler } from "./summary.handler";
@@ -29,6 +30,7 @@ export class HandlerRegistry {
   private readonly askHandler: AskCommandHandler;
   private readonly whaskHandler: WhaskCommandHandler;
   private readonly aiNewsHandler: AiNewsCommandHandler;
+  private readonly replyHandler: ReplyHandler;
   private readonly privateChatHandler: PrivateChatHandler;
   private readonly langHandler: LangCommandHandler;
   private readonly prefs: PreferencesService;
@@ -42,6 +44,7 @@ export class HandlerRegistry {
     this.askHandler = new AskCommandHandler(deps);
     this.whaskHandler = new WhaskCommandHandler(deps);
     this.aiNewsHandler = new AiNewsCommandHandler(deps);
+    this.replyHandler = new ReplyHandler(deps);
     this.privateChatHandler = new PrivateChatHandler(deps);
     this.langHandler = new LangCommandHandler(deps);
   }
@@ -59,6 +62,7 @@ export class HandlerRegistry {
     bot.command("ainews", (ctx) => this.aiNewsHandler.handle(ctx));
     bot.command("lang", (ctx) => this.langHandler.handle(ctx));
     bot.on("message:text", async (ctx) => {
+      await this.replyHandler.handle(ctx);
       await this.mentionHandler.handle(ctx);
       await this.summaryHandler.handle(ctx);
       await this.privateChatHandler.handle(ctx);
