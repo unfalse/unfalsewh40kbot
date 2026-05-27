@@ -69,13 +69,20 @@ export class OllamaLlmService implements LlmService {
         ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
         : content;
 
-    try {
-      return await ollamaSemaphore.run(() => this.callModel(truncated, contextType, language));
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : "unknown";
-      console.error(`[OllamaLlmService] error (${contextType}):`, reason);
-      if (contextType === "error") return t(messages.llm.fallback_error, language);
-      throw new Error("llm_unavailable");
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await ollamaSemaphore.run(() => this.callModel(truncated, contextType, language));
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : "unknown";
+        console.error(`[OllamaLlmService] error (${contextType}, attempt ${attempt + 1}):`, reason);
+
+        if (contextType === "error") return t(messages.llm.fallback_error, language);
+
+        if (reason !== "empty_completion") throw new Error("llm_unavailable");
+        // empty_completion: повторяем попытку; после второй — возвращаем fallback
+      }
     }
+
+    return t(messages.llm.fallback_error, language);
   }
 }
