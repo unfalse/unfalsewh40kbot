@@ -3,6 +3,7 @@ import { sanitizeTelegramHtml } from "../util/html";
 import { Semaphore } from "../util/semaphore";
 import type { Language } from "./preferences.service";
 import type { LlmService, PersonaContext } from "./llm.service";
+import type { ChatMessage } from "./conversation.service";
 import {
   LANG_INSTRUCTION,
   LENGTH_INSTRUCTION,
@@ -32,17 +33,21 @@ export class OllamaLlmService implements LlmService {
     content: string,
     contextType: PersonaContext,
     language: Language,
+    history: ChatMessage[] = [],
   ): Promise<string> {
     const systemPart = systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION;
     const instruction = userInstructionFor(contextType);
-    const userContent = `${systemPart}\n\n${instruction}\n\n---\n${content}`;
 
     const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: this.model,
-        messages: [{ role: "user", content: userContent }],
+        messages: [
+          { role: "system", content: systemPart },
+          ...history.map((m) => ({ role: m.role, content: m.content })),
+          { role: "user", content: `${instruction}\n\n---\n${content}` },
+        ],
         // max_tokens не передаём: для thinking-моделей (gemma4) жёсткий лимит
         // съедает весь бюджет на «думалку» и оставляет пустой content.
         // Длину ответа контролирует системный промпт («один абзац»).
@@ -63,6 +68,7 @@ export class OllamaLlmService implements LlmService {
     content: string,
     contextType: PersonaContext,
     language: Language = "ru",
+    history: ChatMessage[] = [],
   ): Promise<string> {
     const truncated =
       content.length > MAX_CONTENT_CHARS
@@ -71,7 +77,7 @@ export class OllamaLlmService implements LlmService {
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await ollamaSemaphore.run(() => this.callModel(truncated, contextType, language));
+        return await ollamaSemaphore.run(() => this.callModel(truncated, contextType, language, history));
       } catch (err) {
         const reason = err instanceof Error ? err.message : "unknown";
         console.error(`[OllamaLlmService] error (${contextType}, attempt ${attempt + 1}):`, reason);

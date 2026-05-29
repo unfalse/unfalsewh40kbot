@@ -3,6 +3,7 @@ import type { LlmService } from "../services/llm.service";
 import type { ParserService } from "../services/parser.service";
 import type { WeatherService } from "../services/weather.service";
 import type { PreferencesService } from "../services/preferences.service";
+import type { ConversationService } from "../services/conversation.service";
 import { messages, t } from "../config/messages";
 import { AiNewsCommandHandler } from "./ainews.handler";
 import { AskCommandHandler } from "./ask.handler";
@@ -20,6 +21,7 @@ export type BotDeps = {
   llm: LlmService;
   parser: ParserService;
   prefs: PreferencesService;
+  conversation: ConversationService;
 };
 
 export class HandlerRegistry {
