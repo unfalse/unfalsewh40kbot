@@ -1,22 +1,26 @@
 import type { Context } from "grammy";
 import type { LlmService } from "../services/llm.service";
 import type { PreferencesService } from "../services/preferences.service";
+import type { ConversationService } from "../services/conversation.service";
 import { messages, t } from "../config/messages";
 
 export class AskCommandHandler {
   private readonly llm: LlmService;
   private readonly prefs: PreferencesService;
+  private readonly conversation: ConversationService;
 
-  constructor(deps: { llm: LlmService; prefs: PreferencesService }) {
+  constructor(deps: { llm: LlmService; prefs: PreferencesService; conversation: ConversationService }) {
     this.llm = deps.llm;
     this.prefs = deps.prefs;
+    this.conversation = deps.conversation;
   }
 
   async handle(ctx: Context): Promise<void> {
     const text = ctx.message?.text ?? "";
     const query = text.replace(/^\/ask(@\w+)?\s*/i, "").trim();
     const messageId = ctx.message?.message_id;
-    const lang = this.prefs.getLanguage(ctx.from?.id ?? 0);
+    const userId = ctx.from?.id ?? 0;
+    const lang = this.prefs.getLanguage(userId);
 
     if (!query) {
       await ctx.reply(
@@ -28,7 +32,10 @@ export class AskCommandHandler {
 
     try {
       await ctx.replyWithChatAction("typing");
-      const result = await this.llm.wrapInPersona(query, "plain", lang);
+      const history = this.conversation.getHistory(userId);
+      const result = await this.llm.wrapInPersona(query, "plain", lang, history);
+      this.conversation.push(userId, "user", query);
+      this.conversation.push(userId, "assistant", result);
       await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
     } catch (e) {
       const reason = e instanceof Error ? e.message : "unknown";

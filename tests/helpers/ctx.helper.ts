@@ -4,6 +4,7 @@ import type { LlmService, PersonaContext } from "../../src/services/llm.service"
 import type { WeatherService, CurrentWeatherFacts } from "../../src/services/weather.service";
 import type { ParserService, ParsedPage } from "../../src/services/parser.service";
 import type { PreferencesService, Language } from "../../src/services/preferences.service";
+import type { ConversationService } from "../../src/services/conversation.service";
 
 type MessageOverrides = {
   text?: string;
@@ -14,17 +15,20 @@ type MessageOverrides = {
 };
 
 export function makeFakeCtx(overrides: MessageOverrides = {}): Context {
+  const from = { id: 1, first_name: "Test", username: "testuser" };
   const ctx = {
+    from,
     message: {
       message_id: overrides.messageId ?? 1,
       text: overrides.text ?? "",
       entities: overrides.entities,
       chat: { id: overrides.chatId ?? 100, type: "private" as const },
-      from: { id: 1, first_name: "Test", username: "testuser" },
+      from,
     },
     me: { username: overrides.botUsername ?? "testbot" },
+    chat: { id: overrides.chatId ?? 100, type: "private" as const },
     reply: vi.fn().mockResolvedValue(undefined),
-    replyWithHTML: vi.fn().mockResolvedValue(undefined), // no current handler uses replyWithHTML; mocked for future handlers
+    replyWithHTML: vi.fn().mockResolvedValue(undefined),
     replyWithChatAction: vi.fn().mockResolvedValue(undefined),
   } as unknown as Context;
   return ctx;
@@ -69,5 +73,14 @@ export function makeMockParser(): ParserService {
       title: "Test Page",
       text: "Test content",
     }),
+    fetchAiNews: vi.fn().mockResolvedValue([]),
   };
+}
+
+export function makeMockConversation(): ConversationService {
+  return {
+    getHistory: vi.fn().mockReturnValue([]),
+    push: vi.fn(),
+    clear: vi.fn(),
+  } as unknown as ConversationService;
 }

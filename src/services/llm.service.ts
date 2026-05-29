@@ -3,11 +3,17 @@ import { messages, t } from "../config/messages";
 import { sanitizeTelegramHtml } from "../util/html";
 import { Semaphore } from "../util/semaphore";
 import type { Language } from "./preferences.service";
+import type { ChatMessage } from "./conversation.service";
 
 export type PersonaContext = "weather" | "summary" | "error" | "chat" | "plain" | "whask" | "ainews";
 
 export interface LlmService {
-  wrapInPersona(content: string, contextType: PersonaContext, language?: Language): Promise<string>;
+  wrapInPersona(
+    content: string,
+    contextType: PersonaContext,
+    language?: Language,
+    history?: ChatMessage[],
+  ): Promise<string>;
 }
 
 export const LANG_INSTRUCTION: Record<Language, string> = {
@@ -69,10 +75,23 @@ export class GeminiLlmService implements LlmService {
     this.model = model;
   }
 
-  private async callModel(prompt: string, contextType: PersonaContext, language: Language = "ru"): Promise<string> {
+  private async callModel(
+    prompt: string,
+    contextType: PersonaContext,
+    language: Language = "ru",
+    history: ChatMessage[] = [],
+  ): Promise<string> {
+    const contents = [
+      ...history.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      })),
+      { role: "user", parts: [{ text: prompt }] },
+    ];
+
     const response = await this.ai.models.generateContent({
       model: this.model,
-      contents: prompt,
+      contents,
       config: {
         systemInstruction: systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION,
         temperature: TEMPERATURE[contextType],
@@ -84,7 +103,12 @@ export class GeminiLlmService implements LlmService {
     return sanitizeTelegramHtml(raw);
   }
 
-  async wrapInPersona(content: string, contextType: PersonaContext, language: Language = "ru"): Promise<string> {
+  async wrapInPersona(
+    content: string,
+    contextType: PersonaContext,
+    language: Language = "ru",
+    history: ChatMessage[] = [],
+  ): Promise<string> {
     const truncated =
       content.length > MAX_CONTENT_CHARS
         ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
@@ -93,7 +117,7 @@ export class GeminiLlmService implements LlmService {
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await llmSemaphore.run(() => this.callModel(prompt, contextType, language));
+        return await llmSemaphore.run(() => this.callModel(prompt, contextType, language, history));
       } catch {
         if (contextType === "error") return t(messages.llm.fallback_error, language);
         if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 60_000));

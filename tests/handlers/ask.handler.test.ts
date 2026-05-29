@@ -1,16 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AskCommandHandler } from "../../src/handlers/ask.handler";
-import { makeFakeCtx, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
+import { makeFakeCtx, makeMockConversation, makeMockLlm, makeMockPrefs } from "../helpers/ctx.helper";
 
 describe("AskCommandHandler", () => {
   let llm: ReturnType<typeof makeMockLlm>;
   let prefs: ReturnType<typeof makeMockPrefs>;
+  let conversation: ReturnType<typeof makeMockConversation>;
   let handler: AskCommandHandler;
 
   beforeEach(() => {
     llm = makeMockLlm();
     prefs = makeMockPrefs();
-    handler = new AskCommandHandler({ llm, prefs });
+    conversation = makeMockConversation();
+    handler = new AskCommandHandler({ llm, prefs, conversation });
   });
 
   it("happy path — calls LLM with trimmed query and replies with result", async () => {
@@ -21,11 +23,21 @@ describe("AskCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain", "ru");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain", "ru", []);
     expect(ctx.reply).toHaveBeenCalledWith(
       "LLM answer",
       expect.objectContaining({ parse_mode: "HTML" }),
     );
+  });
+
+  it("saves user and assistant messages to history on success", async () => {
+    vi.mocked(llm.wrapInPersona).mockResolvedValue("LLM answer");
+    const ctx = makeFakeCtx({ text: "/ask tell me about Warhammer" });
+
+    await handler.handle(ctx);
+
+    expect(conversation.push).toHaveBeenCalledWith(1, "user", "tell me about Warhammer");
+    expect(conversation.push).toHaveBeenCalledWith(1, "assistant", "LLM answer");
   });
 
   it("empty query — does NOT call LLM and sends usage hint", async () => {
@@ -46,14 +58,14 @@ describe("AskCommandHandler", () => {
     await handler.handle(ctx);
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain", "ru");
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain", "ru", []);
     expect(ctx.reply).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ parse_mode: "HTML" }),
     );
   });
 
-  it("LLM throws — replies with non-empty fallback and does not rethrow", async () => {
+  it("LLM throws — replies with non-empty fallback, does not rethrow, does not push history", async () => {
     vi.mocked(llm.wrapInPersona).mockRejectedValue(new Error("quota_exceeded"));
     const ctx = makeFakeCtx({ text: "/ask something" });
 
@@ -62,6 +74,7 @@ describe("AskCommandHandler", () => {
     expect(ctx.reply).toHaveBeenCalledOnce();
     const replyArg = vi.mocked(ctx.reply).mock.calls[0][0] as string;
     expect(replyArg.length).toBeGreaterThan(0);
+    expect(conversation.push).not.toHaveBeenCalled();
   });
 
   it("reply_parameters forwarded — reply includes message_id when messageId is set", async () => {

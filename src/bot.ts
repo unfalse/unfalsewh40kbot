@@ -9,6 +9,7 @@ import type { LlmService } from "./services/llm.service";
 import { HttpParserService } from "./services/parser.service";
 import { OpenWeatherService } from "./services/weather.service";
 import { PreferencesService } from "./services/preferences.service";
+import { ConversationService } from "./services/conversation.service";
 import { messages } from "./config/messages";
 
 // Устанавливаем лимит ожидания в 10 минут (600 000 мс)
@@ -62,7 +63,8 @@ export class VoxLogisBot {
     const parser = new HttpParserService();
 
     const prefs = new PreferencesService();
-    new HandlerRegistry({ llm, weather, parser, prefs }).register(bot);
+    const conversation = new ConversationService();
+    new HandlerRegistry({ llm, weather, parser, prefs, conversation }).register(bot);
 
     bot.catch(async (err) => {
       const cause = err.error;
