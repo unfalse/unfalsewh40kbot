@@ -36,7 +36,8 @@ export class PrivateChatHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const history = this.conversation.getHistory(userId);
-      const result = await this.llm.wrapInPersona(text, "whask", lang, history);
+      const sysEnabled = this.prefs.getSystemPromptEnabled(userId);
+      const result = await this.llm.wrapInPersona(text, "whask", lang, history, sysEnabled);
       this.conversation.push(userId, "user", text);
       this.conversation.push(userId, "assistant", result);
       await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });

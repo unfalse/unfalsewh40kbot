@@ -24,6 +24,7 @@ interface Messages {
     whask: { empty_query: L10n; error: L10n };
     ainews: { no_results: L10n; error: L10n };
     lang: { usage: L10n; set_ru: L10n; set_en: L10n };
+    toggle: { enabled: L10n; disabled: L10n };
   };
   llm: {
     html_format_rule: string;

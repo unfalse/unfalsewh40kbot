@@ -23,7 +23,7 @@ describe("AskCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain", "ru", []);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Warhammer", "plain", "ru", [], true);
     expect(ctx.reply).toHaveBeenCalledWith(
       "LLM answer",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -58,7 +58,7 @@ describe("AskCommandHandler", () => {
     await handler.handle(ctx);
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain", "ru", []);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("what is chaos", "plain", "ru", [], true);
     expect(ctx.reply).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ parse_mode: "HTML" }),

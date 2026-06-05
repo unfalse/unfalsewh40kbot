@@ -33,7 +33,8 @@ export class AskCommandHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const history = this.conversation.getHistory(userId);
-      const result = await this.llm.wrapInPersona(query, "plain", lang, history);
+      const sysEnabled = this.prefs.getSystemPromptEnabled(userId);
+      const result = await this.llm.wrapInPersona(query, "plain", lang, history, sysEnabled);
       this.conversation.push(userId, "user", query);
       this.conversation.push(userId, "assistant", result);
       await ctx.reply(result, messageId ? { reply_parameters: { message_id: messageId }, parse_mode: "HTML" } : { parse_mode: "HTML" });
