@@ -5,6 +5,7 @@ export type Language = "ru" | "en";
 
 interface UserPrefs {
   language: Language;
+  systemPromptEnabled?: boolean;
 }
 
 type Store = Record<string, UserPrefs>;
@@ -27,6 +28,16 @@ export class PreferencesService {
 
   setLanguage(userId: number, lang: Language): void {
     this.store[String(userId)] = { ...this.store[String(userId)], language: lang };
+    writeFileSync(this.filePath, JSON.stringify(this.store, null, 2));
+  }
+
+  getSystemPromptEnabled(userId: number): boolean {
+    const stored = this.store[String(userId)]?.systemPromptEnabled;
+    return stored ?? (process.env["SYSTEM_PROMPT_ENABLED"] !== "false");
+  }
+
+  setSystemPromptEnabled(userId: number, enabled: boolean): void {
+    this.store[String(userId)] = { ...this.store[String(userId)], systemPromptEnabled: enabled };
     writeFileSync(this.filePath, JSON.stringify(this.store, null, 2));
   }
 }

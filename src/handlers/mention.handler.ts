@@ -45,7 +45,8 @@ export class MentionHandler {
     try {
       await ctx.replyWithChatAction("typing");
       const history = this.conversation.getHistory(userId);
-      const result = await this.llm.wrapInPersona(stripped, "chat", lang, history);
+      const sysEnabled = this.prefs.getSystemPromptEnabled(userId);
+      const result = await this.llm.wrapInPersona(stripped, "chat", lang, history, sysEnabled);
       this.conversation.push(userId, "user", stripped);
       this.conversation.push(userId, "assistant", result);
       await ctx.reply(result, {
