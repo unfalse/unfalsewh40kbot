@@ -13,11 +13,8 @@ export interface LlmService {
     contextType: PersonaContext,
     language?: Language,
     history?: ChatMessage[],
-    systemPromptEnabled?: boolean,
   ): Promise<string>;
 }
-
-export const SYSTEM_PROMPT_ENABLED = process.env["SYSTEM_PROMPT_ENABLED"] !== "false";
 
 export const LANG_INSTRUCTION: Record<Language, string> = {
   ru: "\nОтвечай исключительно на русском языке, независимо от языка вопроса.",
@@ -83,7 +80,6 @@ export class GeminiLlmService implements LlmService {
     contextType: PersonaContext,
     language: Language = "ru",
     history: ChatMessage[] = [],
-    systemPromptEnabled = SYSTEM_PROMPT_ENABLED,
   ): Promise<string> {
     const contents = [
       ...history.map((m) => ({
@@ -93,15 +89,11 @@ export class GeminiLlmService implements LlmService {
       { role: "user", parts: [{ text: prompt }] },
     ];
 
-    const systemInstruction = systemPromptEnabled
-      ? systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION
-      : undefined;
-
     const response = await this.ai.models.generateContent({
       model: this.model,
       contents,
       config: {
-        ...(systemInstruction ? { systemInstruction } : {}),
+        systemInstruction: systemPromptFor(contextType) + LANG_INSTRUCTION[language] + LENGTH_INSTRUCTION,
         temperature: TEMPERATURE[contextType],
         maxOutputTokens: TOKENS[contextType],
       },
@@ -116,19 +108,16 @@ export class GeminiLlmService implements LlmService {
     contextType: PersonaContext,
     language: Language = "ru",
     history: ChatMessage[] = [],
-    systemPromptEnabled = SYSTEM_PROMPT_ENABLED,
   ): Promise<string> {
     const truncated =
       content.length > MAX_CONTENT_CHARS
         ? content.slice(0, MAX_CONTENT_CHARS) + "\n[…усечено…]"
         : content;
-    const prompt = systemPromptEnabled
-      ? `${userInstructionFor(contextType)}\n\n---\n${truncated}`
-      : truncated;
+    const prompt = `${userInstructionFor(contextType)}\n\n---\n${truncated}`;
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        return await llmSemaphore.run(() => this.callModel(prompt, contextType, language, history, systemPromptEnabled));
+        return await llmSemaphore.run(() => this.callModel(prompt, contextType, language, history));
       } catch {
         if (contextType === "error") return t(messages.llm.fallback_error, language);
         if (attempt === 0) await new Promise<void>((resolve) => setTimeout(resolve, 60_000));

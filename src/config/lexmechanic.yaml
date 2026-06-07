@@ -116,13 +116,6 @@ handlers:
     set_en:
       ru: "Язык переключён на английский."
       en: "Language switched to English."
-  toggle:
-    enabled:
-      ru: "Системный промпт <b>включён</b>. Протокол персоны активирован."
-      en: "System prompt <b>enabled</b>. Persona protocol active."
-    disabled:
-      ru: "Системный промпт <b>отключён</b>. Прямой доступ к машине разрешён."
-      en: "System prompt <b>disabled</b>. Direct machine access granted."
 
 llm:
   html_format_rule: >-

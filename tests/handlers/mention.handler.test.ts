@@ -23,7 +23,7 @@ describe("MentionHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Nurgle", "chat", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("tell me about Nurgle", "chat", "ru", []);
     expect(ctx.reply).toHaveBeenCalledWith(
       "nurgle info",
       expect.objectContaining({ reply_parameters: { message_id: 7 }, parse_mode: "HTML" }),
@@ -89,7 +89,7 @@ describe("MentionHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello", "chat", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello", "chat", "ru", []);
   });
 
   it("mid-text mention — strips @botname from middle of sentence, LLM receives cleaned text", async () => {
@@ -98,7 +98,7 @@ describe("MentionHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello how are you", "chat", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("hello how are you", "chat", "ru", []);
   });
 
   it("LLM throws — retries with error persona, replies with error result, does not rethrow", async () => {
@@ -112,7 +112,7 @@ describe("MentionHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledTimes(2);
-    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "tell me something", "chat", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenNthCalledWith(1, "tell me something", "chat", "ru", []);
     expect(llm.wrapInPersona).toHaveBeenNthCalledWith(
       2,
       expect.stringContaining("quota_exceeded"),

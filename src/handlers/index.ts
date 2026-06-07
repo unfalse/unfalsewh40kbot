@@ -8,7 +8,6 @@ import { messages, t } from "../config/messages";
 import { AiNewsCommandHandler } from "./ainews.handler";
 import { AskCommandHandler } from "./ask.handler";
 import { LangCommandHandler } from "./lang.handler";
-import { ToggleCommandHandler } from "./toggle.handler";
 import { MentionHandler } from "./mention.handler";
 import { PrivateChatHandler } from "./private.handler";
 import { ReplyHandler } from "./reply.handler";
@@ -36,7 +35,6 @@ export class HandlerRegistry {
   private readonly replyHandler: ReplyHandler;
   private readonly privateChatHandler: PrivateChatHandler;
   private readonly langHandler: LangCommandHandler;
-  private readonly toggleHandler: ToggleCommandHandler;
   private readonly prefs: PreferencesService;
 
   constructor(deps: BotDeps) {
@@ -51,7 +49,6 @@ export class HandlerRegistry {
     this.replyHandler = new ReplyHandler(deps);
     this.privateChatHandler = new PrivateChatHandler(deps);
     this.langHandler = new LangCommandHandler(deps);
-    this.toggleHandler = new ToggleCommandHandler(deps);
   }
 
   register(bot: Bot): void {
@@ -66,7 +63,6 @@ export class HandlerRegistry {
     bot.command("whask", (ctx) => this.whaskHandler.handle(ctx));
     bot.command("ainews", (ctx) => this.aiNewsHandler.handle(ctx));
     bot.command("lang", (ctx) => this.langHandler.handle(ctx));
-    bot.command("toggle", (ctx) => this.toggleHandler.handle(ctx));
     bot.on("message:text", async (ctx) => {
       await this.replyHandler.handle(ctx);
       await this.mentionHandler.handle(ctx);

@@ -116,13 +116,6 @@ handlers:
     set_en:
       ru: "Язык переключён на английский."
       en: "Language switched to English."
-  toggle:
-    enabled:
-      ru: "Системный промпт <b>включён</b>. Личность активна."
-      en: "System prompt <b>enabled</b>. Persona is active."
-    disabled:
-      ru: "Системный промпт <b>отключён</b>. Режим чистой модели."
-      en: "System prompt <b>disabled</b>. Raw model mode."
 
 llm:
   html_format_rule: >-

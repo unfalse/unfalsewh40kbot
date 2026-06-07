@@ -64,9 +64,7 @@ export function makeMockPrefs(language: Language = "ru"): PreferencesService {
   return {
     getLanguage: vi.fn<(userId: number) => Language>().mockReturnValue(language),
     setLanguage: vi.fn<(userId: number, lang: Language) => void>(),
-    getSystemPromptEnabled: vi.fn<(userId: number) => boolean>().mockReturnValue(true),
-    setSystemPromptEnabled: vi.fn<(userId: number, enabled: boolean) => void>(),
-  } as unknown as PreferencesService;
+  };
 }
 
 export function makeMockParser(): ParserService {

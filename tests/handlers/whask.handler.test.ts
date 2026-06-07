@@ -23,7 +23,7 @@ describe("WhaskCommandHandler", () => {
 
     expect(ctx.replyWithChatAction).toHaveBeenCalledWith("typing");
     expect(llm.wrapInPersona).toHaveBeenCalledOnce();
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("scan the area", "whask", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("scan the area", "whask", "ru", []);
     expect(ctx.reply).toHaveBeenCalledWith(
       "SHODAN response",
       expect.objectContaining({ parse_mode: "HTML" }),
@@ -57,7 +57,7 @@ describe("WhaskCommandHandler", () => {
 
     await handler.handle(ctx);
 
-    expect(llm.wrapInPersona).toHaveBeenCalledWith("system status", "whask", "ru", [], true);
+    expect(llm.wrapInPersona).toHaveBeenCalledWith("system status", "whask", "ru", []);
     expect(ctx.reply).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ parse_mode: "HTML" }),
