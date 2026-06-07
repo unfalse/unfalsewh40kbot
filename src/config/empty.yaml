@@ -1,0 +1,170 @@
+meta:
+  startup_log: "[BOT] Service started. Long polling active."
+  start_command:
+    ru: |
+      Привет! Я бот-помощник.
+
+      <b>Доступные команды:</b>
+      <code>/weather [город]</code> — текущая погода в указанном городе
+      <code>/ask [вопрос]</code> — задать вопрос модели
+      <code>/whask [вопрос]</code> — задать вопрос с расширенным ответом
+      <code>/request [запрос]</code> — развёрнутый запрос
+      <code>/ainews</code> — последние новости об AI
+      <code>/lang ru|en</code> — переключить язык ответов
+
+      Пришли ссылку — я кратко перескажу её содержимое.
+      Упомяни меня по имени — я отвечу.
+      Напиши мне напрямую — я отвечу на твоё сообщение.
+    en: |
+      Hello! I'm an assistant bot.
+
+      <b>Available commands:</b>
+      <code>/weather [city]</code> — current weather for the given city
+      <code>/ask [question]</code> — ask the model a question
+      <code>/whask [question]</code> — ask a question and get an extended answer
+      <code>/request [request]</code> — extended request
+      <code>/ainews</code> — latest AI news
+      <code>/lang ru|en</code> — switch response language
+
+      Send a link — I will summarize its contents.
+      Mention me by name — I will reply.
+      Message me directly — I will respond.
+
+handlers:
+  ask:
+    empty_query:
+      ru: >-
+        Команда <code>/ask</code> вызвана без текста вопроса.
+        Пример использования: <code>/ask как работает TCP?</code>
+      en: >-
+        The <code>/ask</code> command was invoked without a question.
+        Usage example: <code>/ask how does TCP work?</code>
+    error:
+      ru: "Не удалось обработать запрос. Попробуй ещё раз позже."
+      en: "Failed to process the request. Please try again later."
+
+  mention:
+    empty:
+      ru: >-
+        Ты упомянул меня, но не написал текст запроса.
+        Сформулируй вопрос, и я отвечу.
+      en: >-
+        You mentioned me but didn't include any text.
+        Write your question and I'll reply.
+
+  weather:
+    empty_city_prompt:
+      ru: "Команда /weather вызвана без указания города."
+      en: "Command /weather invoked without a city."
+    city_not_found:
+      ru: "Указанный город не найден."
+      en: "The specified city was not found."
+    timeout:
+      ru: "Таймаут при обращении к источнику погодных данных."
+      en: "Timeout while accessing the weather data source."
+    error_prefix:
+      ru: "Не удалось получить погодные данные: {reason}"
+      en: "Failed to retrieve weather data: {reason}"
+
+  summary:
+    private_url_prompt:
+      ru: "Эта ссылка указывает на localhost или приватную сеть и не может быть обработана."
+      en: "This link points to localhost or a private network and cannot be processed."
+    parse_error_prefix:
+      ru: "Не удалось обработать ссылку. Причина: {reason}"
+      en: "Failed to process the link. Reason: {reason}"
+
+  request:
+    empty_query_prompt:
+      ru: "Команда /request вызвана без текста запроса."
+      en: "Command /request invoked without any text."
+    error_prefix:
+      ru: "Не удалось обработать команду /request: {reason}"
+      en: "Failed to process the /request command: {reason}"
+
+  whask:
+    empty_query:
+      ru: >-
+        Команда <code>/whask</code> вызвана без вопроса.
+        Пример: <code>/whask почему небо синее?</code>
+      en: >-
+        The <code>/whask</code> command was invoked without a question.
+        Example: <code>/whask why is the sky blue?</code>
+    error:
+      ru: "Модель временно недоступна. Повтори запрос позже."
+      en: "The model is temporarily unavailable. Please try again later."
+
+  ainews:
+    no_results:
+      ru: "Сейчас нет свежих новостей об AI. Попробуй позже."
+      en: "There is no recent AI news right now. Try again later."
+    error:
+      ru: "Не удалось получить новости. Попробуй позже."
+      en: "Failed to fetch news. Try again later."
+
+  lang:
+    usage:
+      ru: "Укажи язык: <code>/lang ru</code> или <code>/lang en</code>"
+      en: "Specify language: <code>/lang ru</code> or <code>/lang en</code>"
+    set_ru:
+      ru: "Язык переключён на русский."
+      en: "Language switched to Russian."
+    set_en:
+      ru: "Язык переключён на английский."
+      en: "Language switched to English."
+
+llm:
+  html_format_rule: >-
+    Используй только HTML-теги Telegram для форматирования: <b>жирный</b>, <i>курсив</i>, <code>код</code>.
+    Markdown (звёздочки, решётки, подчёркивания) использовать нельзя.
+
+  systems:
+    lex: |
+      Ты — полезный ассистент. Отвечай на вопросы пользователя точно, по делу и доброжелательно,
+      на том языке, на котором задан вопрос. Не придумывай факты и не приписывай себе личность
+      персонажа. Форматируй ответ для Telegram только через HTML-теги: <b>жирный</b>, <i>курсив</i>,
+      <code>код</code>. Markdown (звёздочки, решётки, подчёркивания) использовать нельзя.
+      Старайся не повторять одни и те же формулировки.
+    whask: |
+      Ты — полезный ассистент. Отвечай на вопросы пользователя развёрнуто, точно и по делу,
+      на том языке, на котором задан вопрос. Не придумывай факты и не приписывай себе личность
+      персонажа. Форматируй ответ для Telegram только через HTML-теги: <b>жирный</b>, <i>курсив</i>,
+      <code>код</code>. Markdown (звёздочки, решётки, подчёркивания) использовать нельзя.
+      Старайся не повторять одни и те же формулировки.
+    plain: |
+      Отвечай точно, по делу, на том языке, на котором задан вопрос. Форматируй ответ так,
+      чтобы он хорошо читался в Telegram. Форматирование — исключительно HTML-теги Telegram:
+      <b>жирный</b>, <i>курсив</i>, <code>код</code>. Markdown (звёздочки, решётки, подчёркивания) — запрещён.
+
+  instructions:
+    weather: >-
+      Ниже — сырые данные о погоде. Передай ключевые факты одним абзацем (3–4 предложения):
+      температура, ощущается как, влажность, ветер, описание. Не искажай числа, не выдумывай город или единицы измерения.
+    summary: >-
+      Ниже — извлечённый текст страницы и заголовок. Составь краткую выжимку из 3–5 тезисов на русском языке.
+      Каждый тезис с новой строки, в начале строки символ «•» и пробел. Без преамбулы.
+      Оберни всю выжимку целиком в тег <tg-spoiler>...</tg-spoiler>.
+      Используй ТОЛЬКО HTML-теги. ЗАПРЕЩЕНО использовать Markdown.
+    error: >-
+      Ниже — техническое описание сбоя. Сформулируй одно нейтральное предложение для пользователя,
+      без трассировки стека, без JSON, без кода.
+    chat: >-
+      Пользователь обратился к тебе напрямую. Ответь одним абзацем, 2–3 предложения, по существу,
+      доброжелательно и без лишней театральности. Если вопрос неясен — вежливо уточни, что имелось в виду.
+    whask: >-
+      Пользователь задал вопрос. Ответь развёрнуто, одним абзацем (3–5 предложений), точно и по делу,
+      без отсылок к каким-либо вымышленным вселенным или персонажам. Вопрос пользователя:
+    plain: "Ответь на вопрос или запрос пользователя одним абзацем, по делу. Вопрос или запрос:"
+    ainews: >-
+      Ниже — список последних новостей об AI (заголовок, ссылка, рейтинг).
+      Составь сводку: 3–5 тезисов, каждый с новой строки, символ «•» в начале.
+      Выдели ключевую тенденцию одним предложением в начале (в теге <b>).
+      Без преамбулы. Только HTML-теги Telegram.
+
+  fallback_error:
+    ru: >-
+      Не удалось обработать запрос: соединение с моделью прервано.
+      Попробуй повторить запрос позже.
+    en: >-
+      Failed to process the request: connection to the model was interrupted.
+      Please try again later.
